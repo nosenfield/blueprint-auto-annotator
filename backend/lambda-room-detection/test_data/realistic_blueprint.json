@@ -1,0 +1,16 @@
+{
+  "description": "Realistic blueprint layout based on POC test data",
+  "walls": [
+    {"id": "wall_001", "bounding_box": [142, 353, 153, 513], "confidence": 0.80},
+    {"id": "wall_002", "bounding_box": [282, 351, 294, 513], "confidence": 0.79},
+    {"id": "wall_003", "bounding_box": [142, 353, 294, 363], "confidence": 0.75},
+    {"id": "wall_004", "bounding_box": [142, 503, 294, 513], "confidence": 0.75},
+    {"id": "wall_005", "bounding_box": [142, 353, 153, 363], "confidence": 0.70},
+    {"id": "wall_006", "bounding_box": [282, 351, 294, 363], "confidence": 0.70}
+  ],
+  "image_dimensions": [609, 515],
+  "min_room_area": 2000,
+  "return_visualization": true,
+  "expected_rooms": 2
+}
+
