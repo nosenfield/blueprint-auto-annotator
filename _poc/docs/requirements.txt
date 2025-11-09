@@ -1,0 +1,13 @@
+# Requirements for Lambda YOLOv8 Container
+
+# Core dependencies
+ultralytics>=8.0.0
+torch>=2.0.0
+torchvision>=0.15.0
+opencv-python-headless>=4.8.0
+Pillow>=10.0.0
+numpy>=1.24.0
+boto3>=1.34.0
+
+# For faster inference (optional)
+# nvidia-tensorrt>=8.6.0  # Only if using GPU Lambda

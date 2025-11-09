@@ -1,48 +1,111 @@
-# Node
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+*.manifest
+*.spec
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Virtual environments
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# Testing
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+.hypothesis/
+*.cover
+coverage/
+.nyc_output/
+
+# Node.js / Frontend
 node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+lerna-debug.log*
+.pnpm-debug.log*
 pnpm-debug.log*
-
-# Environment
-.env
-.env.local
-.env.*.local
-
-# Build outputs
 dist/
-build/
-out/
-.next/
-.nuxt/
-.cache/
-
-# OS
-.DS_Store
-Thumbs.db
-*.swp
-*.swo
-*~
+dist-ssr/
+*.local
 
 # IDE
 .vscode/
 .idea/
+*.swp
+*.swo
+*~
+.DS_Store
 *.sublime-*
 .cursor-tutor
 
-# Testing
-coverage/
-.nyc_output/
+# Environment variables
+.env
+.env.local
+.env.*.local
+.env.production
+.env.development
 
-# Logs
-logs/
+# Docker
 *.log
+docker-compose.override.yml
+
+# AWS
+.aws/
+*.pem
+*.key
+
+# YOLO models (large files - download separately)
+backend/lambda-wall-detection/models/*.pt
+backend/lambda-wall-detection/models/*.weights
+
+# Test outputs
+test_visualization.png
+test_results.json
+tests/output/
+
+# Documentation build
+_docs/_build/
+
+# OS
+.DS_Store
+Thumbs.db
 
 # Temporary files
+*.tmp
+*.bak
+*.swp
+*~
 tmp/
 temp/
-*.tmp
+logs/
 
 # Context summaries (ephemeral session notes)
 _context-summaries/
