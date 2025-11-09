@@ -1,0 +1,9 @@
+# YOLO Model Weights Directory
+
+Place your YOLOv8 model weights file here:
+- yolov8l.pt (recommended for accuracy)
+- yolov8m.pt (faster alternative)
+
+Download from: https://github.com/ultralytics/assets/releases
+
+Note: Model files are excluded from git due to large size.
