@@ -277,6 +277,6 @@ After successful local testing:
 - [FastAPI Documentation](https://fastapi.tiangolo.com/)
 - [Pytest Documentation](https://docs.pytest.org/)
 - [OpenCV Documentation](https://docs.opencv.org/)
-- [Architecture Documentation](../../_docs/architecture.md)
-- [Task List](../../_docs/task-list.md)
+- [Architecture Documentation](../../_docs/architecture-v2.md)
+- [Task List](../../_docs/task-list-v2.md)
 

@@ -225,8 +225,8 @@ curl https://cloudfront-url
 
 ## 📚 Key Documentation
 
-- [architecture.md](./architecture.md) - System design & diagrams
-- [task-list.md](./task-list.md) - Step-by-step implementation
+- [architecture-v2.md](./architecture-v2.md) - System design & diagrams (revised architecture)
+- [task-list-v2.md](./task-list-v2.md) - Step-by-step implementation (revised task list)
 - [API Reference](https://api-url/docs) - FastAPI auto-generated docs
 
 ---
@@ -296,8 +296,8 @@ CloudFront: https://console.aws.amazon.com/cloudfront
 
 **When implementing this system:**
 
-1. **Read architecture.md first** - Understand system design
-2. **Follow task-list.md sequentially** - Each task builds on previous
+1. **Read architecture-v2.md first** - Understand system design (revised architecture)
+2. **Follow task-list-v2.md sequentially** - Each task builds on previous (revised task list)
 3. **Use provided code samples** - Copy/paste ready
 4. **Test incrementally** - Validate each phase before proceeding
 5. **Refer to this document** - Quick command reference

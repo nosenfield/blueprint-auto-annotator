@@ -70,8 +70,8 @@ room-reader/
 │   └── systemPatterns.md           # Coding standards
 │
 ├── _docs/                          # Project documentation
-│   ├── architecture.md             # System architecture
-│   ├── task-list.md               # Detailed implementation tasks
+│   ├── architecture-v2.md          # System architecture (revised)
+│   ├── task-list-v2.md            # Detailed implementation tasks (revised)
 │   └── guides/                    # Workflow guides
 │
 ├── .cursor/                        # Cursor IDE configuration
@@ -295,8 +295,8 @@ VITE_API_URL=http://localhost:8000  # Development
 ## Key Resources
 
 ### Documentation
-- Architecture: `_docs/architecture.md`
-- Task List: `_docs/task-list.md`
+- Architecture: `_docs/architecture-v2.md`
+- Task List: `_docs/task-list-v2.md`
 - Memory Bank: `memory-bank/README.md`
 
 ### Memory Bank Files (Read These First!)

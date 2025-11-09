@@ -6,8 +6,8 @@
 
 Read in this order:
 1. [projectbrief.md](../memory-bank/projectbrief.md) - Project overview
-2. [architecture.md](./architecture.md) - System design
-3. [task-list.md](./task-list.md) - Current tasks
+2. [architecture-v2.md](./architecture-v2.md) - System design (revised architecture)
+3. [task-list-v2.md](./task-list-v2.md) - Current tasks (revised task list)
 4. [guides/multi-agent-workflow.md](./guides/multi-agent-workflow.md) - Multi-agent workflows
 
 ### For AI Sessions
@@ -20,7 +20,7 @@ Read in this order:
 - [.cursor/rules/memory-bank-management.mdc](../.cursor/rules/memory-bank-management.mdc) - Complete procedures
 
 **When implementing features:**
-- [architecture.md](./architecture.md) - System design reference
+- [architecture-v2.md](./architecture-v2.md) - System design reference (revised architecture)
 - [best-practices/](./best-practices/) - Stack-specific patterns
 
 **After completing work:**

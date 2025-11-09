@@ -150,7 +150,7 @@ No blocked tasks currently
 - Project uses AI-optimized template with Memory Bank system
 - Test-first development workflow is enforced
 - Multi-agent workflow available for parallel development
-- Comprehensive task list already exists in _docs/task-list.md
+- Comprehensive task list already exists in _docs/task-list-v2.md
 
 ### Risks Identified
 1. YOLO model size may require Lambda memory optimization

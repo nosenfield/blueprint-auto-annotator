@@ -28,8 +28,8 @@ cd ../my-new-project
 
 # Fill in project-specific details
 # 1. memory-bank/projectbrief.md (describe your project)
-# 2. _docs/architecture.md (your system design)
-# 3. _docs/task-list.md (your tasks)
+# 2. _docs/architecture-v2.md (your system design)
+# 3. _docs/task-list-v2.md (your tasks)
 # 4. _docs/best-practices/[stack].md (stack-specific patterns)
 ```
 
@@ -84,7 +84,7 @@ scripts/                ← Automation scripts
 **Critical**: Memory Bank is the MOST IMPORTANT component. AI reads this every session to understand project context. Without current Memory Bank files, AI effectiveness drops dramatically.
 
 ### Reference When Needed
-- `_docs/architecture.md` - System design
+- `_docs/architecture-v2.md` - System design (revised architecture)
 - `_docs/guides/multi-agent-workflow.md` - Multi-agent workflows
 - `_docs/guides/test-first-workflow.md` - Test-first development
 

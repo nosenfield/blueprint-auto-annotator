@@ -1,5 +1,9 @@
 # Architecture Documentation
 
+> **⚠️ DEPRECATED:** This document has been superseded by [architecture-v2.md](./architecture-v2.md).  
+> **Please use architecture-v2.md for the current architecture.**  
+> This file is kept for reference only.
+
 ## Overview
 
 **Project:** Room Boundary Detection System  
