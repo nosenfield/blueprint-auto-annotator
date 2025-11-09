@@ -1,37 +1,39 @@
-# AI Project Template
+# Room Boundary Detection System
 
-Standardized project scaffolding for AI-assisted software development.
+Automated room boundary detection from architectural blueprints using YOLO-based wall detection and geometric algorithms.
 
 ## What is This?
 
-A reusable template that includes:
-- ✅ Cursor IDE rules for consistent AI behavior
-- ✅ Memory Bank structure for context preservation
-- ✅ Test-first development patterns
-- ✅ Multi-agent workflow definitions
-- ✅ Automation scripts for setup and maintenance
+A serverless room detection system that:
+- ✅ Analyzes architectural blueprint images using YOLO models
+- ✅ Detects walls and converts them to room polygons
+- ✅ Provides REST API endpoints for detection
+- ✅ React web interface for uploading blueprints
+- ✅ AWS Lambda deployment (serverless architecture)
 
 ## Quick Start
 
-### Creating a New Project
+### Project Structure
 
-```bash
-# Clone this template
-git clone <this-repo> ai-project-template
-cd ai-project-template
-
-# Create new project
-./scripts/setup-project.sh my-new-project
-
-# Navigate to new project
-cd ../my-new-project
-
-# Fill in project-specific details
-# 1. memory-bank/projectbrief.md (describe your project)
-# 2. _docs/architecture-v2.md (your system design)
-# 3. _docs/task-list-v2.md (your tasks)
-# 4. _docs/best-practices/[stack].md (stack-specific patterns)
 ```
+room-reader/
+├── backend/
+│   ├── shared/                          # Shared models and utilities
+│   ├── lambda-wall-detection-v1/       # Wall detection Lambda (v1)
+│   ├── lambda-geometric-conversion-v1/  # Wall-to-room conversion (v1)
+│   ├── lambda-room-detection-v2/       # Direct room detection (v2 - Phase 2)
+│   └── lambda-room-refinement-v2/      # Room refinement (v2 - Phase 2)
+├── frontend/                            # React web interface
+├── infrastructure/                      # Terraform and deployment configs
+└── memory-bank/                         # Project context and documentation
+```
+
+### Development Workflow
+
+1. **Start Development Session**: Use `/begin-development` command in Cursor
+2. **Start Task**: Use `/start-task [id]` to get implementation plan
+3. **Implement**: Use `/implement` to execute approved plan
+4. **Update Memory Bank**: After completing tasks, update context files
 
 ### Starting Development Session
 
@@ -62,11 +64,16 @@ Confirm current phase and next task.
 ## Directory Structure
 
 ```
-.cursor/rules/           ← Cursor IDE rules (process, standards)
-memory-bank/            ← Project context (filled per-project)
-_docs/                  ← Project documentation
-tests/patterns/         ← Reusable test templates
-scripts/                ← Automation scripts
+backend/                ← Lambda functions (Python/FastAPI)
+  ├── shared/           ← Shared models and utilities
+  ├── lambda-wall-detection-v1/      ← Wall detection (YOLO)
+  ├── lambda-geometric-conversion-v1/ ← Wall-to-room conversion
+  ├── lambda-room-detection-v2/      ← Direct room detection (Phase 2)
+  └── lambda-room-refinement-v2/     ← Room refinement (Phase 2)
+frontend/               ← React web interface
+infrastructure/         ← Terraform and AWS configs
+memory-bank/            ← Project context and documentation
+_docs/                  ← Architecture and task documentation
 ```
 
 ## Key Files
@@ -131,28 +138,19 @@ Available commands (use with `/` in Cursor):
 
 ## Features
 
-### Test-First Development
-- Write tests before implementation
-- Self-correcting AI loop
-- 70%+ reduction in regressions
-- Automated verification
+### Room Detection
+- **Wall Detection (v1)**: YOLO-based wall detection from blueprints
+- **Geometric Conversion (v1)**: Converts wall detections to room polygons
+- **Direct Room Detection (v2)**: YOLO-based room detection (Phase 2)
+- **Visualization**: Generates annotated images with room boundaries
+- **REST API**: FastAPI endpoints for detection services
+- **Web Interface**: React app for uploading blueprints and viewing results
 
-### Multi-Agent Workflows
-- Role-based agents (PLANNER, BACKEND, FRONTEND, TESTING)
-- Structured handoff protocol
-- 3-5x faster parallel development
-- Clear accountability
-
-### Modular Cursor Rules
-- Domain-specific rules
-- Lazy-loading for efficiency
-- 60% better context usage
-- Easy to customize
-
-### Automation Scripts
-- `setup-project.sh` - Initialize new project from template
-- `update-docs.sh` - Documentation sync reminders
-- `verify-context.sh` - Context health check
+### Architecture
+- **Serverless**: AWS Lambda functions (container images)
+- **Independent Deployment**: v1 and v2 models can be deployed separately
+- **Modular Design**: Shared components for consistency
+- **Test-First Development**: Comprehensive test coverage
 
 ## Support
 
@@ -161,10 +159,28 @@ For questions or improvements, see:
 - [Test-First Workflow Guide](_docs/guides/test-first-workflow.md)
 - [Memory Bank README](memory-bank/README.md)
 
+## Project Status
+
+**Current Phase**: Phase 1 - Local Development (40% complete)
+**Target MVP**: 2025-11-20
+
+### Completed
+- ✅ Project structure setup
+- ✅ Room detection Lambda implementation
+- ✅ Local testing infrastructure
+
+### In Progress
+- ⏳ Project structure reorganization (Task 1.1)
+- ⏳ Shared components creation (Task 1.2)
+
+### Next Steps
+- Wall detection Lambda v1
+- Geometric conversion Lambda v1
+- Docker containerization
+- AWS infrastructure setup
+
 ---
 
 **Version**: 1.0
-**Last Updated**: November 2025
-**Created by**: AI-First Development Team
-
-Use freely, adapt as needed, and improve based on your learnings.
+**Last Updated**: 2025-11-09
+**Project**: Room Boundary Detection System
