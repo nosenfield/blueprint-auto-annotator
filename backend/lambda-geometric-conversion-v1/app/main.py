@@ -76,20 +76,27 @@ async def health():
 async def convert_to_rooms(request: GeometricConversionRequest):
     """
     Convert wall detections to room polygons.
-    
+
     Args:
         request: Conversion request with walls and image dimensions
-        
+
     Returns:
         DetectionResponse with detected rooms
     """
+    global converter
     start_time = time.time()
-    
+
     try:
+        # Lazy initialization for Lambda (startup event doesn't always fire)
+        if converter is None:
+            print("Lazy-initializing geometric converter...")
+            converter = GeometricRoomConverter()
+            print("Converter ready")
+
         # Extract data
         walls = [wall.dict() for wall in request.walls]
         width, height = request.image_dimensions
-        
+
         # Update converter min_room_area if specified in request
         if request.min_room_area and request.min_room_area != converter.min_room_area:
             # Create new converter with custom min_room_area
@@ -106,10 +113,9 @@ async def convert_to_rooms(request: GeometricConversionRequest):
         # Create visualization if requested
         visualization = None
         if request.return_visualization and rooms:
-            # Create blank image
-            blank = np.zeros((height, width, 3), dtype=np.uint8)
-            blank.fill(255)  # White background
-            
+            # Create white background image
+            blank = np.ones((height, width, 3), dtype=np.uint8) * 255
+
             # Draw rooms
             vis_image = draw_rooms_on_image(blank, [Room(**r) for r in rooms])
             visualization = encode_image_to_base64(vis_image)
@@ -137,6 +143,64 @@ async def convert_to_rooms(request: GeometricConversionRequest):
         raise HTTPException(status_code=500, detail=f"Conversion failed: {str(e)}")
 
 
-# Lambda handler
-handler = Mangum(app, lifespan="off")
+# Lambda handler with CORS support
+# Following POC pattern: create_response function ensures CORS headers are always present
+mangum_handler = Mangum(app, lifespan="off")
+
+
+def create_response(status_code: int, body: dict) -> dict:
+    """
+    Create Lambda response for API Gateway with CORS headers.
+    Following POC pattern to ensure CORS headers are always present.
+    
+    Args:
+        status_code: HTTP status code
+        body: Response body dictionary
+        
+    Returns:
+        Lambda response object with CORS headers
+    """
+    import json
+    return {
+        'statusCode': status_code,
+        'headers': {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*',  # CORS
+            'Access-Control-Allow-Headers': 'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token',
+            'Access-Control-Allow-Methods': 'POST,OPTIONS,GET'
+        },
+        'body': json.dumps(body)
+    }
+
+
+def handler(event, context):
+    """
+    Lambda handler - delegates to Mangum for FastAPI integration.
+    FastAPI CORSMiddleware handles CORS headers automatically.
+    """
+    import json
+    import traceback
+
+    try:
+        # Call Mangum handler (it handles async internally)
+        # FastAPI CORSMiddleware will add CORS headers automatically
+        response = mangum_handler(event, context)
+
+        # Ensure body is a string if it exists
+        if 'body' in response and not isinstance(response['body'], str):
+            response['body'] = json.dumps(response['body'])
+
+        return response
+
+    except Exception as e:
+        # If handler fails, return error response
+        error_details = traceback.format_exc()
+        print(f"Lambda handler error: {error_details}")
+
+        return create_response(500, {
+            'success': False,
+            'error': 'Internal server error',
+            'message': str(e),
+            'error_type': type(e).__name__
+        })
 

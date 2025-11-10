@@ -1,14 +1,19 @@
 fastapi==0.104.1
 uvicorn[standard]==0.24.0
 mangum==0.17.0
-opencv-python-headless==4.8.1.78
+# Pin numpy to version compatible with GCC 7.3 (Lambda base image has old GCC)
 numpy==1.24.3
 pydantic==2.5.0
 python-multipart==0.0.6
 pillow==10.1.0
-ultralytics==8.0.200
+# Install opencv-python-headless BEFORE ultralytics to avoid GUI dependencies
+opencv-python-headless==4.8.1.78
+# Install torch before ultralytics (ultralytics depends on torch)
 torch==2.1.0
 torchvision==0.16.0
+# Install ultralytics last (it will use already-installed opencv-headless and torch)
+ultralytics==8.0.200
 pytest==7.4.3
 httpx==0.25.2
 
+boto3==1.34.0

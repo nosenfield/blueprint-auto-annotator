@@ -134,8 +134,49 @@ else
 fi
 echo ""
 
-# Step 4: Create POST method for /api/detect-walls
-echo -e "${YELLOW}Step 4: Creating POST method for /api/detect-walls...${NC}"
+# Step 4: Create OPTIONS method for CORS (preflight)
+echo -e "${YELLOW}Step 4: Creating OPTIONS method for CORS...${NC}"
+aws apigateway put-method \
+    --rest-api-id "$API_ID" \
+    --resource-id "$DETECT_WALLS_RESOURCE_ID" \
+    --http-method OPTIONS \
+    --authorization-type NONE \
+    --region $AWS_REGION \
+    --no-api-key-required > /dev/null 2>&1 || echo "  OPTIONS method might already exist"
+
+# Create mock integration for OPTIONS
+aws apigateway put-integration \
+    --rest-api-id "$API_ID" \
+    --resource-id "$DETECT_WALLS_RESOURCE_ID" \
+    --http-method OPTIONS \
+    --type MOCK \
+    --integration-http-method OPTIONS \
+    --request-templates '{"application/json":"{\"statusCode\":200}"}' \
+    --region $AWS_REGION > /dev/null 2>&1 || echo "  OPTIONS integration might already exist"
+
+# Create method response for OPTIONS
+aws apigateway put-method-response \
+    --rest-api-id "$API_ID" \
+    --resource-id "$DETECT_WALLS_RESOURCE_ID" \
+    --http-method OPTIONS \
+    --status-code 200 \
+    --response-parameters '{"method.response.header.Access-Control-Allow-Origin":true,"method.response.header.Access-Control-Allow-Methods":true,"method.response.header.Access-Control-Allow-Headers":true}' \
+    --region $AWS_REGION > /dev/null 2>&1 || echo "  OPTIONS method response might already exist"
+
+# Create integration response for OPTIONS
+aws apigateway put-integration-response \
+    --rest-api-id "$API_ID" \
+    --resource-id "$DETECT_WALLS_RESOURCE_ID" \
+    --http-method OPTIONS \
+    --status-code 200 \
+    --response-parameters '{"method.response.header.Access-Control-Allow-Origin":"'\''*'\''","method.response.header.Access-Control-Allow-Methods":"'\''POST,OPTIONS'\''","method.response.header.Access-Control-Allow-Headers":"'\''Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'\''"}' \
+    --region $AWS_REGION > /dev/null 2>&1 || echo "  OPTIONS integration response might already exist"
+
+echo "  ✓ OPTIONS method created for CORS"
+echo ""
+
+# Step 5: Create POST method for /api/detect-walls
+echo -e "${YELLOW}Step 5: Creating POST method for /api/detect-walls...${NC}"
 aws apigateway put-method \
     --rest-api-id "$API_ID" \
     --resource-id "$DETECT_WALLS_RESOURCE_ID" \
@@ -154,11 +195,29 @@ aws apigateway put-integration \
     --uri "arn:aws:apigateway:${AWS_REGION}:lambda:path/2015-03-31/functions/${WALL_DETECTION_ARN}/invocations" \
     --region $AWS_REGION > /dev/null 2>&1 || echo "  Integration might already exist"
 
-echo "  ✓ POST method created for /api/detect-walls"
+# Add CORS headers to method response
+aws apigateway put-method-response \
+    --rest-api-id "$API_ID" \
+    --resource-id "$DETECT_WALLS_RESOURCE_ID" \
+    --http-method POST \
+    --status-code 200 \
+    --response-parameters '{"method.response.header.Access-Control-Allow-Origin":true}' \
+    --region $AWS_REGION > /dev/null 2>&1 || echo "  Method response might already exist"
+
+# Add CORS headers to integration response
+aws apigateway put-integration-response \
+    --rest-api-id "$API_ID" \
+    --resource-id "$DETECT_WALLS_RESOURCE_ID" \
+    --http-method POST \
+    --status-code 200 \
+    --response-parameters '{"method.response.header.Access-Control-Allow-Origin":"'\''*'\''"}' \
+    --region $AWS_REGION > /dev/null 2>&1 || echo "  Integration response might already exist"
+
+echo "  ✓ POST method created for /api/detect-walls with CORS"
 echo ""
 
-# Step 5: Create /api/convert-to-rooms resource
-echo -e "${YELLOW}Step 5: Creating /api/convert-to-rooms resource...${NC}"
+# Step 6: Create /api/convert-to-rooms resource
+echo -e "${YELLOW}Step 6: Creating /api/convert-to-rooms resource...${NC}"
 CONVERT_ROOMS_RESOURCE_ID=$(aws apigateway create-resource \
     --rest-api-id "$API_ID" \
     --parent-id "$API_RESOURCE_ID" \
@@ -179,8 +238,46 @@ else
 fi
 echo ""
 
-# Step 6: Create POST method for /api/convert-to-rooms
-echo -e "${YELLOW}Step 6: Creating POST method for /api/convert-to-rooms...${NC}"
+# Step 7: Create OPTIONS method for CORS (preflight)
+echo -e "${YELLOW}Step 7: Creating OPTIONS method for CORS...${NC}"
+aws apigateway put-method \
+    --rest-api-id "$API_ID" \
+    --resource-id "$CONVERT_ROOMS_RESOURCE_ID" \
+    --http-method OPTIONS \
+    --authorization-type NONE \
+    --region $AWS_REGION \
+    --no-api-key-required > /dev/null 2>&1 || echo "  OPTIONS method might already exist"
+
+aws apigateway put-integration \
+    --rest-api-id "$API_ID" \
+    --resource-id "$CONVERT_ROOMS_RESOURCE_ID" \
+    --http-method OPTIONS \
+    --type MOCK \
+    --integration-http-method OPTIONS \
+    --request-templates '{"application/json":"{\"statusCode\":200}"}' \
+    --region $AWS_REGION > /dev/null 2>&1 || echo "  OPTIONS integration might already exist"
+
+aws apigateway put-method-response \
+    --rest-api-id "$API_ID" \
+    --resource-id "$CONVERT_ROOMS_RESOURCE_ID" \
+    --http-method OPTIONS \
+    --status-code 200 \
+    --response-parameters '{"method.response.header.Access-Control-Allow-Origin":true,"method.response.header.Access-Control-Allow-Methods":true,"method.response.header.Access-Control-Allow-Headers":true}' \
+    --region $AWS_REGION > /dev/null 2>&1 || echo "  OPTIONS method response might already exist"
+
+aws apigateway put-integration-response \
+    --rest-api-id "$API_ID" \
+    --resource-id "$CONVERT_ROOMS_RESOURCE_ID" \
+    --http-method OPTIONS \
+    --status-code 200 \
+    --response-parameters '{"method.response.header.Access-Control-Allow-Origin":"'\''*'\''","method.response.header.Access-Control-Allow-Methods":"'\''POST,OPTIONS'\''","method.response.header.Access-Control-Allow-Headers":"'\''Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'\''"}' \
+    --region $AWS_REGION > /dev/null 2>&1 || echo "  OPTIONS integration response might already exist"
+
+echo "  ✓ OPTIONS method created for CORS"
+echo ""
+
+# Step 8: Create POST method for /api/convert-to-rooms
+echo -e "${YELLOW}Step 8: Creating POST method for /api/convert-to-rooms...${NC}"
 aws apigateway put-method \
     --rest-api-id "$API_ID" \
     --resource-id "$CONVERT_ROOMS_RESOURCE_ID" \
@@ -201,9 +298,9 @@ aws apigateway put-integration \
 echo "  ✓ POST method created for /api/convert-to-rooms"
 echo ""
 
-# Step 7: Create /api/v2 resource (if v2 Lambda exists)
+# Step 9: Create /api/v2 resource (if v2 Lambda exists)
 if [ -n "$ROOM_DETECTION_ARN" ]; then
-    echo -e "${YELLOW}Step 7: Creating /api/v2 resource...${NC}"
+    echo -e "${YELLOW}Step 9: Creating /api/v2 resource...${NC}"
     V2_RESOURCE_ID=$(aws apigateway create-resource \
         --rest-api-id "$API_ID" \
         --parent-id "$API_RESOURCE_ID" \
@@ -225,7 +322,7 @@ if [ -n "$ROOM_DETECTION_ARN" ]; then
     echo ""
     
     # Create /api/v2/detect-rooms resource
-    echo -e "${YELLOW}Step 8: Creating /api/v2/detect-rooms resource...${NC}"
+    echo -e "${YELLOW}Step 10: Creating /api/v2/detect-rooms resource...${NC}"
     DETECT_ROOMS_V2_RESOURCE_ID=$(aws apigateway create-resource \
         --rest-api-id "$API_ID" \
         --parent-id "$V2_RESOURCE_ID" \
@@ -246,8 +343,46 @@ if [ -n "$ROOM_DETECTION_ARN" ]; then
     fi
     echo ""
     
+    # Create OPTIONS method for CORS (preflight)
+    echo -e "${YELLOW}Step 11: Creating OPTIONS method for CORS...${NC}"
+    aws apigateway put-method \
+        --rest-api-id "$API_ID" \
+        --resource-id "$DETECT_ROOMS_V2_RESOURCE_ID" \
+        --http-method OPTIONS \
+        --authorization-type NONE \
+        --region $AWS_REGION \
+        --no-api-key-required > /dev/null 2>&1 || echo "  OPTIONS method might already exist"
+    
+    aws apigateway put-integration \
+        --rest-api-id "$API_ID" \
+        --resource-id "$DETECT_ROOMS_V2_RESOURCE_ID" \
+        --http-method OPTIONS \
+        --type MOCK \
+        --integration-http-method OPTIONS \
+        --request-templates '{"application/json":"{\"statusCode\":200}"}' \
+        --region $AWS_REGION > /dev/null 2>&1 || echo "  OPTIONS integration might already exist"
+    
+    aws apigateway put-method-response \
+        --rest-api-id "$API_ID" \
+        --resource-id "$DETECT_ROOMS_V2_RESOURCE_ID" \
+        --http-method OPTIONS \
+        --status-code 200 \
+        --response-parameters '{"method.response.header.Access-Control-Allow-Origin":true,"method.response.header.Access-Control-Allow-Methods":true,"method.response.header.Access-Control-Allow-Headers":true}' \
+        --region $AWS_REGION > /dev/null 2>&1 || echo "  OPTIONS method response might already exist"
+    
+    aws apigateway put-integration-response \
+        --rest-api-id "$API_ID" \
+        --resource-id "$DETECT_ROOMS_V2_RESOURCE_ID" \
+        --http-method OPTIONS \
+        --status-code 200 \
+        --response-parameters '{"method.response.header.Access-Control-Allow-Origin":"'\''*'\''","method.response.header.Access-Control-Allow-Methods":"'\''POST,OPTIONS'\''","method.response.header.Access-Control-Allow-Headers":"'\''Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'\''"}' \
+        --region $AWS_REGION > /dev/null 2>&1 || echo "  OPTIONS integration response might already exist"
+    
+    echo "  ✓ OPTIONS method created for CORS"
+    echo ""
+    
     # Create POST method for /api/v2/detect-rooms
-    echo -e "${YELLOW}Step 9: Creating POST method for /api/v2/detect-rooms...${NC}"
+    echo -e "${YELLOW}Step 12: Creating POST method for /api/v2/detect-rooms...${NC}"
     aws apigateway put-method \
         --rest-api-id "$API_ID" \
         --resource-id "$DETECT_ROOMS_V2_RESOURCE_ID" \
@@ -269,8 +404,8 @@ if [ -n "$ROOM_DETECTION_ARN" ]; then
     echo ""
 fi
 
-# Step 8: Grant API Gateway permission to invoke Lambda functions
-echo -e "${YELLOW}Step 10: Granting API Gateway permission to invoke Lambda functions...${NC}"
+# Step 10: Grant API Gateway permission to invoke Lambda functions
+echo -e "${YELLOW}Step 13: Granting API Gateway permission to invoke Lambda functions...${NC}"
 
 # Grant permission for wall-detection-v1
 aws lambda add-permission \
@@ -304,8 +439,8 @@ fi
 echo "  ✓ Permissions granted"
 echo ""
 
-# Step 9: Deploy API to production stage
-echo -e "${YELLOW}Step 11: Deploying API to production stage...${NC}"
+# Step 11: Deploy API to production stage
+echo -e "${YELLOW}Step 14: Deploying API to production stage...${NC}"
 DEPLOYMENT_ID=$(aws apigateway create-deployment \
     --rest-api-id "$API_ID" \
     --stage-name "$STAGE_NAME" \

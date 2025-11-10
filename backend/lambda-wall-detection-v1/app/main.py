@@ -10,7 +10,14 @@ import sys
 import os
 
 # Add shared module to path
-sys.path.insert(0, '/app/shared')
+# Support both Docker (/app/shared) and local development (../shared)
+if os.path.exists('/app/shared'):
+    # Docker environment
+    sys.path.insert(0, '/app')
+else:
+    # Local development - add backend directory so 'shared' can be imported
+    _backend_path = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+    sys.path.insert(0, os.path.abspath(_backend_path))
 
 from shared.models import WallDetectionRequest, WallDetectionResponse, ErrorResponse
 from shared.image_utils import decode_base64_image, validate_image_dimensions
@@ -72,30 +79,37 @@ async def health():
 async def detect_walls(request: WallDetectionRequest):
     """
     Detect walls in blueprint image.
-    
+
     Args:
         request: Wall detection request with base64 image
-        
+
     Returns:
         WallDetectionResponse with detected walls
-        
+
     Raises:
         HTTPException: On validation or processing errors
     """
+    global detector
     start_time = time.time()
-    
+
     try:
+        # Lazy initialization for Lambda (startup event doesn't always fire)
+        if detector is None:
+            print("Lazy-initializing wall detector...")
+            detector = WallDetector()
+            print("Wall detector ready")
+
         # Decode image
         image = decode_base64_image(request.image)
-        
+
         # Validate dimensions
         is_valid, error_msg = validate_image_dimensions(image)
         if not is_valid:
             raise ValueError(error_msg)
-        
+
         # Get image dimensions
         height, width = image.shape[:2]
-        
+
         # Detect walls
         walls, inference_time = detector.detect(
             image,
@@ -120,6 +134,64 @@ async def detect_walls(request: WallDetectionRequest):
         raise HTTPException(status_code=500, detail=f"Detection failed: {str(e)}")
 
 
-# Lambda handler
-handler = Mangum(app, lifespan="off")
+# Lambda handler with CORS support
+# Following POC pattern: create_response function ensures CORS headers are always present
+mangum_handler = Mangum(app, lifespan="off")
+
+
+def create_response(status_code: int, body: dict) -> dict:
+    """
+    Create Lambda response for API Gateway with CORS headers.
+    Following POC pattern to ensure CORS headers are always present.
+    
+    Args:
+        status_code: HTTP status code
+        body: Response body dictionary
+        
+    Returns:
+        Lambda response object with CORS headers
+    """
+    import json
+    return {
+        'statusCode': status_code,
+        'headers': {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*',  # CORS
+            'Access-Control-Allow-Headers': 'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token',
+            'Access-Control-Allow-Methods': 'POST,OPTIONS,GET'
+        },
+        'body': json.dumps(body)
+    }
+
+
+def handler(event, context):
+    """
+    Lambda handler - delegates to Mangum for FastAPI integration.
+    FastAPI CORSMiddleware handles CORS headers automatically.
+    """
+    import json
+    import traceback
+
+    try:
+        # Call Mangum handler (it handles async internally)
+        # FastAPI CORSMiddleware will add CORS headers automatically
+        response = mangum_handler(event, context)
+
+        # Ensure body is a string if it exists
+        if 'body' in response and not isinstance(response['body'], str):
+            response['body'] = json.dumps(response['body'])
+
+        return response
+
+    except Exception as e:
+        # If handler fails, return error response
+        error_details = traceback.format_exc()
+        print(f"Lambda handler error: {error_details}")
+
+        return create_response(500, {
+            'success': False,
+            'error': 'Internal server error',
+            'message': str(e),
+            'error_type': type(e).__name__
+        })
 

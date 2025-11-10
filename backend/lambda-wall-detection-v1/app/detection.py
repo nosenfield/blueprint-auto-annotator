@@ -7,6 +7,8 @@ import numpy as np
 from ultralytics import YOLO
 from typing import List, Tuple
 import os
+import boto3
+import tarfile
 
 
 class WallDetector:
@@ -33,13 +35,51 @@ class WallDetector:
         self._load_model()
     
     def _load_model(self):
-        """Load YOLO model from disk"""
+        """Load YOLO model from disk or download from S3"""
+        # If model doesn't exist locally, download from S3 (like POC)
         if not os.path.exists(self.model_path):
-            raise FileNotFoundError(f"Model not found: {self.model_path}")
-        
+            print(f"Custom model not found at {self.model_path}")
+            print("Downloading trained model from S3...")
+
+            try:
+                self._download_model_from_s3()
+            except Exception as e:
+                print(f"Failed to download model from S3: {e}")
+                print("ERROR: Cannot proceed without trained model")
+                raise FileNotFoundError(f"Model not found at {self.model_path} and S3 download failed: {e}")
+
         print(f"Loading wall detection model from {self.model_path}")
         self.model = YOLO(self.model_path)
         print("Model loaded successfully")
+
+    def _download_model_from_s3(self):
+        """Download trained WALL detection model from S3 (SageMaker training output)"""
+        s3_bucket = os.environ.get('MODEL_S3_BUCKET', 'sagemaker-us-east-1-971422717446')
+        s3_key = os.environ.get('MODEL_S3_KEY', 'room-detection-yolo-1762559721/output/model.tar.gz')
+
+        print(f"  S3 Bucket: {s3_bucket}")
+        print(f"  S3 Key: {s3_key}")
+
+        s3_client = boto3.client('s3')
+        tar_path = "/tmp/model.tar.gz"
+        model_path = "/tmp/final_model.pt"
+
+        # Download tar.gz from S3
+        print(f"  Downloading from s3://{s3_bucket}/{s3_key}")
+        s3_client.download_file(s3_bucket, s3_key, tar_path)
+        print(f"  ✓ Downloaded to {tar_path}")
+
+        # Extract final_model.pt from tar.gz
+        print(f"  Extracting model...")
+        with tarfile.open(tar_path, 'r:gz') as tar:
+            tar.extractall('/tmp/')
+
+        # Model should be at /tmp/final_model.pt after extraction
+        if os.path.exists(model_path):
+            print(f"  ✓ Model extracted to {model_path}")
+            self.model_path = model_path
+        else:
+            raise FileNotFoundError("final_model.pt not found in tar.gz archive")
     
     def detect(
         self,

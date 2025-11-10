@@ -162,3 +162,4 @@ echo -e "${YELLOW}Note:${NC} Changes take effect on the next Lambda invocation."
 echo "  Test with: ./test_lambda.sh <blueprint.png>"
 echo ""
 
+

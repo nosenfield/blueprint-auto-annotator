@@ -159,15 +159,16 @@ def draw_rooms_on_image(
     
     for i, room in enumerate(rooms):
         color = colors[i % len(colors)]
-        
-        # Draw polygon
+
+        # Draw polygon outline
         points = np.array(room.polygon_vertices, dtype=np.int32)
-        cv2.polylines(overlay, [points], True, color, 2)
-        
+        cv2.polylines(overlay, [points], True, color, 3)
+
         # Draw filled polygon with transparency
-        mask = np.zeros_like(image)
-        cv2.fillPoly(mask, [points], color)
-        overlay = cv2.addWeighted(overlay, 0.7, mask, 0.3, 0)
+        temp_mask = np.zeros_like(image)
+        cv2.fillPoly(temp_mask, [points], color)
+        # Only blend in the polygon region to avoid darkening the whole image
+        overlay = cv2.addWeighted(overlay, 0.85, temp_mask, 0.15, 0)
         
         # Draw room ID at centroid
         cx, cy = room.centroid

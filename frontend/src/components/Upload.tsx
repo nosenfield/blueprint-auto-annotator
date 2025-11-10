@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import type { DetectionResponse, ModelVersion } from '../services/api';
+import type { DetectionResponse, ModelVersion } from '../types';
 import { detectRooms } from '../services/api';
 
 export function Upload() {
