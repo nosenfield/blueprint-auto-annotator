@@ -5,12 +5,12 @@
 ## Current Focus
 
 ### What We're Working On Right Now
-✅ **Phase 1 Task 1.5 Complete!** Frontend Application implemented with React, TypeScript, Vite, and Tailwind CSS. Full v1 pipeline integration (wall detection → geometric conversion).
+✅ **Phase 1 Task 1.6 Complete!** Deployment scripts and infrastructure configuration created for deploying Wall Model v1 to AWS. Scripts for IAM role setup, Lambda deployment, and API Gateway guidance.
 
 ### Current Phase
-**Phase 1 - Local Development**: In Progress (70% complete)
+**Phase 1 - Local Development**: In Progress (80% complete)
 
-**Current Task**: Task 1.5 - Frontend Application (v1 Support) ✅ COMPLETED
+**Current Task**: Task 1.6 - Deploy Wall Model v1 to AWS ✅ COMPLETED
 
 ### Active Decisions
 - **Memory Bank First**: Starting with proper Memory Bank setup to ensure AI has full context for all future sessions
@@ -23,7 +23,15 @@
 ## Recent Changes
 
 ### Last 3 Significant Changes
-1. Frontend Application implemented (Task 1.5) - 2025-11-09
+1. Deployment scripts and infrastructure created (Task 1.6) - 2025-11-09
+   - Created deployment scripts for wall detection and geometric conversion Lambda functions
+   - Created IAM role setup script
+   - Created master deployment script (deploy-all-v1.sh)
+   - Created API Gateway setup guidance script
+   - Created deployment documentation (README.md)
+   - Created AWS configuration template
+   - Scripts handle ECR repository creation, Docker image build/push, Lambda function creation/update
+2. Frontend Application implemented (Task 1.5) - 2025-11-09
    - Created React application with TypeScript, Vite, and Tailwind CSS
    - Implemented API service with v1 pipeline support (wall detection → geometric conversion)
    - Created Upload component with image preview, model selection, and results display
@@ -125,15 +133,10 @@ None currently - project is in initial setup phase
 
 ## Key Files Created This Session
 
-- `frontend/package.json` - Dependencies and scripts (React, TypeScript, Vite, Tailwind)
-- `frontend/tsconfig.json` - TypeScript configuration
-- `frontend/vite.config.ts` - Vite configuration with proxy
-- `frontend/tailwind.config.js` - Tailwind CSS configuration
-- `frontend/src/types/index.ts` - TypeScript type definitions
-- `frontend/src/services/api.ts` - API client with v1 pipeline support
-- `frontend/src/components/Upload.tsx` - Upload component with image preview and results display
-- `frontend/src/App.tsx` - Main App component
-- `frontend/src/main.tsx` - React entry point
-- `frontend/src/index.css` - Global styles with Tailwind directives
-- `frontend/index.html` - HTML entry point
-- `frontend/.env.example` - Environment variables template
+- `infrastructure/scripts/setup-iam-role.sh` - IAM role creation script
+- `infrastructure/scripts/deploy-wall-detection-v1.sh` - Wall detection Lambda deployment script
+- `infrastructure/scripts/deploy-geometric-conversion-v1.sh` - Geometric conversion Lambda deployment script
+- `infrastructure/scripts/deploy-all-v1.sh` - Master deployment script
+- `infrastructure/scripts/setup-api-gateway.sh` - API Gateway setup guidance script
+- `infrastructure/README.md` - Deployment documentation
+- `infrastructure/config/aws-config.example.json` - AWS configuration template

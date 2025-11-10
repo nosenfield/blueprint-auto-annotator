@@ -1,0 +1,26 @@
+{
+  "aws_region": "us-east-1",
+  "aws_account_id": "YOUR_ACCOUNT_ID",
+  "lambda_functions": {
+    "wall_detection_v1": {
+      "name": "wall-detection-v1",
+      "memory": 3008,
+      "timeout": 30,
+      "ecr_repository": "wall-detection-v1"
+    },
+    "geometric_conversion_v1": {
+      "name": "geometric-conversion-v1",
+      "memory": 2048,
+      "timeout": 30,
+      "ecr_repository": "geometric-conversion-v1"
+    }
+  },
+  "iam_role": {
+    "name": "room-reader-lambda-execution-role"
+  },
+  "api_gateway": {
+    "name": "room-reader-api-v1",
+    "stage": "prod"
+  }
+}
+

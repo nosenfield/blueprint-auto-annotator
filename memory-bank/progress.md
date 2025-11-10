@@ -5,14 +5,14 @@
 ## Current Sprint Status
 
 **Sprint**: Setup & Phase 1 - Local Development
-**Progress**: 70% complete (setup + project structure + shared components + wall detection Lambda v1 + geometric conversion Lambda v1 + frontend application + room detection Lambda + local testing)
+**Progress**: 80% complete (setup + project structure + shared components + wall detection Lambda v1 + geometric conversion Lambda v1 + frontend application + deployment scripts + room detection Lambda + local testing)
 **Target Completion**: 2025-11-11
 
 ---
 
 ## Phase Status
 
-### Phase 1: Local Development Setup (In Progress - 70%)
+### Phase 1: Local Development Setup (In Progress - 80%)
 - [x] Project structure planning
 - [x] Memory Bank initialization
 - [x] Backend directory structure creation
@@ -21,6 +21,7 @@
 - [x] Wall Detection Lambda v1 implemented (Task 1.3) - YOLO-based wall detection
 - [x] Geometric Conversion Lambda v1 implemented (Task 1.4) - Wall-to-room conversion
 - [x] Frontend Application implemented (Task 1.5) - React app with v1 support
+- [x] Deployment scripts created (Task 1.6) - AWS deployment automation
 - [x] Room detection Lambda implementation
 - [x] Geometric algorithm implementation
 - [x] Visualization generator implementation
@@ -37,12 +38,13 @@
 - [ ] Local container testing
 - [ ] Image size optimization
 
-### Phase 3: AWS Infrastructure Setup (Not Started - 0%)
-- [ ] ECR repository creation
-- [ ] Docker images pushed to ECR
-- [ ] IAM roles and policies
-- [ ] Lambda functions created
-- [ ] API Gateway configuration
+### Phase 3: AWS Infrastructure Setup (Scripts Ready - 0%)
+- [x] Deployment scripts created (Task 1.6)
+- [ ] ECR repository creation (via scripts)
+- [ ] Docker images pushed to ECR (via scripts)
+- [ ] IAM roles and policies (via scripts)
+- [ ] Lambda functions created (via scripts)
+- [ ] API Gateway configuration (guidance provided)
 
 ### Phase 4: Frontend Development (Completed - 100%)
 - [x] React project initialization (Task 1.5)
@@ -73,6 +75,23 @@
 ---
 
 ## Completed Tasks
+
+### 2025-11-09 (Task 1.6 - Deploy Wall Model v1 to AWS)
+- ✓ Created deployment scripts for Lambda functions
+  - deploy-wall-detection-v1.sh: Builds Docker image, pushes to ECR, creates/updates Lambda
+  - deploy-geometric-conversion-v1.sh: Builds Docker image, pushes to ECR, creates/updates Lambda
+  - deploy-all-v1.sh: Master script that deploys all v1 Lambda functions
+- ✓ Created IAM role setup script
+  - setup-iam-role.sh: Creates IAM role with necessary permissions
+  - Attaches basic execution policy and S3 read access
+- ✓ Created API Gateway setup guidance script
+  - setup-api-gateway.sh: Provides guidance for API Gateway configuration
+  - Documents recommended endpoints and integration steps
+- ✓ Created deployment documentation
+  - infrastructure/README.md: Complete deployment guide
+  - Prerequisites, quick start, troubleshooting, cost estimates
+- ✓ Created AWS configuration template
+  - aws-config.example.json: Configuration template for AWS resources
 
 ### 2025-11-09 (Task 1.5 - Frontend Application)
 - ✓ Created React application with TypeScript, Vite, and Tailwind CSS
@@ -202,6 +221,7 @@ No blocked tasks currently
 - [x] Wall detection Lambda v1 (Task 1.3) ✅
 - [x] Geometric conversion Lambda v1 (Task 1.4) ✅
 - [x] Frontend Application (Task 1.5) ✅
+- [x] Deployment scripts (Task 1.6) ✅
 
 ### 2025-11-11 (Day 3)
 - [ ] Complete room detection Lambda implementation
