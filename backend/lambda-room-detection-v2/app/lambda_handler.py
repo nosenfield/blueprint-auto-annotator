@@ -8,7 +8,7 @@ Handles API Gateway events and returns JSON responses.
 import json
 import base64
 import time
-from yolo_inference import get_inference_handler
+from app.yolo_inference import get_inference_handler
 
 
 def handler(event, context):

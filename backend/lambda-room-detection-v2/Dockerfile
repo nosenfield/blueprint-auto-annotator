@@ -18,6 +18,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy Lambda function code
 COPY app/ ${LAMBDA_TASK_ROOT}/app/
 
+# Set proper permissions on Lambda handler files
+RUN chmod -R 755 ${LAMBDA_TASK_ROOT}/app/
+
 # Set handler
 CMD ["app.lambda_handler.handler"]
 

@@ -146,7 +146,7 @@ if aws lambda get-function --function-name $LAMBDA_FUNCTION_NAME --region $AWS_R
         --function-name $LAMBDA_FUNCTION_NAME \
         --region $AWS_REGION
     
-    # Update environment variables
+    # Update environment variables and ephemeral storage
     aws lambda update-function-configuration \
         --function-name $LAMBDA_FUNCTION_NAME \
         --environment Variables="{
@@ -156,6 +156,7 @@ if aws lambda get-function --function-name $LAMBDA_FUNCTION_NAME --region $AWS_R
             IOU_THRESHOLD=0.4,
             IMAGE_SIZE=640
         }" \
+        --ephemeral-storage Size=3072 \
         --region $AWS_REGION
     
     echo "  ✓ Function updated"
@@ -168,6 +169,7 @@ else
         --role $ROLE_ARN \
         --timeout 300 \
         --memory-size 3008 \
+        --ephemeral-storage Size=3072 \
         --region $AWS_REGION \
         --environment Variables="{
             MODEL_S3_BUCKET=$ROOM_MODEL_BUCKET,
