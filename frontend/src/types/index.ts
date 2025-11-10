@@ -48,9 +48,10 @@ export interface WallDetectionResponse {
   success: boolean;
   walls: Wall[];
   total_walls: number;
+  image_dimensions: [number, number];
   processing_time_ms: number;
-  model_version: ModelVersion;
+  model_version?: ModelVersion;
   visualization?: string;
-  metadata: Record<string, any>;
+  metadata?: Record<string, any>;
 }
 

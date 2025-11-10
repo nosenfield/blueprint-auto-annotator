@@ -3,13 +3,18 @@
  * Supports both v1 (wall model) and v2 (room model).
  */
 import type {
-  ModelVersion,
   DetectionOptions,
   DetectionResponse,
   WallDetectionResponse,
 } from '../types';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+
+// Debug: Log API URL (remove in production)
+if (import.meta.env.DEV) {
+  console.log('API_BASE_URL:', API_BASE_URL);
+  console.log('VITE_API_URL from env:', import.meta.env.VITE_API_URL);
+}
 
 /**
  * Detect rooms in blueprint image using v1 model (wall detection → geometric conversion).
@@ -47,8 +52,8 @@ export async function detectRooms(
     }
 
     // Step 2: Convert walls to rooms
-    const [width, height] = wallResponse.metadata?.image_dimensions || [0, 0];
-    
+    const [width, height] = wallResponse.image_dimensions || [0, 0];
+
     const conversionResponse = await convertWallsToRoomsV1(
       wallResponse.walls,
       [width, height],
@@ -84,7 +89,12 @@ export async function detectWallsV1(
   imageBase64: string,
   confidence_threshold: number = 0.10
 ): Promise<WallDetectionResponse> {
-  const response = await fetch(`${API_BASE_URL}/api/detect-walls`, {
+  const url = `${API_BASE_URL}/api/detect-walls`;
+  if (import.meta.env.DEV) {
+    console.log('Fetching from:', url);
+  }
+  
+  const response = await fetch(url, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -97,7 +107,8 @@ export async function detectWallsV1(
 
   if (!response.ok) {
     const error = await response.json().catch(() => ({ error: { message: 'Wall detection failed' } }));
-    throw new Error(error.error?.message || 'Wall detection failed');
+    console.error('API Error:', response.status, error);
+    throw new Error(error.error?.message || `Wall detection failed: ${response.status} ${response.statusText}`);
   }
 
   return response.json();
@@ -149,7 +160,7 @@ export async function detectRoomsV2(
     return_visualization?: boolean;
   } = {}
 ): Promise<DetectionResponse> {
-  const { confidence_threshold = 0.5, return_visualization = true } = options;
+  const { confidence_threshold = 0.5 } = options;
 
   const response = await fetch(`${API_BASE_URL}/api/v2/detect-rooms`, {
     method: 'POST',
@@ -192,7 +203,6 @@ function transformV2Response(v2Response: any): DetectionResponse {
 
   const detectedRooms = v2Response.detected_rooms || [];
   const imageDimensions = v2Response.image_dimensions || [0, 0];
-  const [width, height] = imageDimensions;
 
   // Transform rooms to frontend format
   const rooms = detectedRooms.map((room: any) => {
