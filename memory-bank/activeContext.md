@@ -5,12 +5,12 @@
 ## Current Focus
 
 ### What We're Working On Right Now
-✅ **Phase 1 Task 1.6 Complete!** Deployment scripts and infrastructure configuration created for deploying Wall Model v1 to AWS. Scripts for IAM role setup, Lambda deployment, and API Gateway guidance.
+✅ **Phase 1 Task 1.7 Complete!** Frontend deployment scripts and configuration created for deploying React app to S3/CloudFront. Also enabled v2 model support in frontend for user model selection.
 
 ### Current Phase
-**Phase 1 - Local Development**: In Progress (80% complete)
+**Phase 1 - Local Development**: In Progress (90% complete)
 
-**Current Task**: Task 1.6 - Deploy Wall Model v1 to AWS ✅ COMPLETED
+**Current Task**: Task 1.7 - Deploy Frontend to S3/CloudFront ✅ COMPLETED
 
 ### Active Decisions
 - **Memory Bank First**: Starting with proper Memory Bank setup to ensure AI has full context for all future sessions
@@ -23,7 +23,18 @@
 ## Recent Changes
 
 ### Last 3 Significant Changes
-1. Deployment scripts and infrastructure created (Task 1.6) - 2025-11-09
+1. Frontend deployment scripts and v2 model support (Task 1.7) - 2025-11-09
+   - Created frontend build script (build-frontend.sh)
+   - Created S3 bucket setup script (setup-s3-bucket.sh)
+   - Created frontend deployment script (deploy-frontend.sh)
+   - Created CloudFront setup guidance script
+   - Created S3 bucket policy configuration
+   - Created production environment template
+   - Created frontend deployment documentation
+   - Enabled v2 model in frontend UI selector
+   - Implemented v2 API call (detectRoomsV2 function)
+   - Created v2 response transformer to match frontend format
+2. Deployment scripts and infrastructure created (Task 1.6) - 2025-11-09
    - Created deployment scripts for wall detection and geometric conversion Lambda functions
    - Created IAM role setup script
    - Created master deployment script (deploy-all-v1.sh)
@@ -133,10 +144,13 @@ None currently - project is in initial setup phase
 
 ## Key Files Created This Session
 
-- `infrastructure/scripts/setup-iam-role.sh` - IAM role creation script
-- `infrastructure/scripts/deploy-wall-detection-v1.sh` - Wall detection Lambda deployment script
-- `infrastructure/scripts/deploy-geometric-conversion-v1.sh` - Geometric conversion Lambda deployment script
-- `infrastructure/scripts/deploy-all-v1.sh` - Master deployment script
-- `infrastructure/scripts/setup-api-gateway.sh` - API Gateway setup guidance script
-- `infrastructure/README.md` - Deployment documentation
-- `infrastructure/config/aws-config.example.json` - AWS configuration template
+- `infrastructure/scripts/build-frontend.sh` - Frontend build script
+- `infrastructure/scripts/setup-s3-bucket.sh` - S3 bucket setup script
+- `infrastructure/scripts/deploy-frontend.sh` - Frontend deployment script
+- `infrastructure/scripts/setup-cloudfront.sh` - CloudFront setup guidance script
+- `infrastructure/config/bucket-policy.json` - S3 bucket policy for public access
+- `infrastructure/config/cloudfront-config.example.json` - CloudFront configuration template
+- `infrastructure/FRONTEND_DEPLOYMENT.md` - Frontend deployment guide
+- `frontend/.env.production.example` - Production environment variables template
+- `frontend/src/services/api.ts` - Updated with v2 model support (detectRoomsV2, transformV2Response)
+- `frontend/src/components/Upload.tsx` - Updated to enable v2 model selection

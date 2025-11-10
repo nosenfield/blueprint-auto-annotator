@@ -166,11 +166,67 @@ aws configure
 - REST API: $3.50 per million requests
 - HTTP API: $1.00 per million requests
 
+## Frontend Deployment
+
+### Deploy Frontend to S3/CloudFront
+
+```bash
+# 1. Setup S3 bucket
+./infrastructure/scripts/setup-s3-bucket.sh
+
+# 2. Deploy frontend
+./infrastructure/scripts/deploy-frontend.sh
+
+# 3. Setup CloudFront (manual or Terraform)
+./infrastructure/scripts/setup-cloudfront.sh
+```
+
+### Individual Steps
+
+```bash
+# Build frontend
+./infrastructure/scripts/build-frontend.sh
+
+# Setup S3 bucket
+./infrastructure/scripts/setup-s3-bucket.sh
+
+# Deploy to S3
+./infrastructure/scripts/deploy-frontend.sh
+```
+
+## Frontend Scripts
+
+### `build-frontend.sh`
+Builds React application for production.
+
+### `setup-s3-bucket.sh`
+Creates S3 bucket, enables static website hosting, and applies bucket policy.
+
+### `deploy-frontend.sh`
+Builds and deploys frontend to S3 bucket.
+
+### `setup-cloudfront.sh`
+Provides guidance for setting up CloudFront distribution.
+
+## Frontend Configuration
+
+### Environment Variables
+
+- `VITE_API_URL`: API Gateway URL for production
+- See `frontend/.env.production.example` for template
+
+### S3 Bucket Configuration
+
+- Bucket Name: `room-reader-frontend-{account-id}` (configurable via `S3_BUCKET_NAME`)
+- Static Website Hosting: Enabled
+- Public Read Access: Enabled via bucket policy
+
 ## Next Steps
 
 1. Set up API Gateway (see `setup-api-gateway.sh`)
-2. Configure CORS for frontend access
-3. Set up CloudWatch alarms
-4. Configure auto-scaling if needed
-5. Set up CI/CD pipeline
+2. Deploy frontend to S3/CloudFront
+3. Configure CORS for frontend access
+4. Set up CloudWatch alarms
+5. Configure auto-scaling if needed
+6. Set up CI/CD pipeline
 

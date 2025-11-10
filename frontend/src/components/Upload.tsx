@@ -81,8 +81,8 @@ export function Upload() {
           className="p-2 border rounded w-full max-w-xs"
           disabled={loading}
         >
-          <option value="v1">Wall Model (Stable)</option>
-          <option value="v2" disabled>Room Model (Coming Soon)</option>
+          <option value="v1">Wall Model (v1) - 2-Step Pipeline</option>
+          <option value="v2">Room Model (v2) - Direct Detection</option>
         </select>
       </div>
 

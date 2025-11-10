@@ -68,8 +68,11 @@ export async function detectRooms(
       },
     };
   } else {
-    // V2: Direct room detection (not implemented yet)
-    throw new Error('V2 model not yet implemented');
+    // V2: Direct room detection
+    return await detectRoomsV2(imageBase64, {
+      confidence_threshold,
+      return_visualization,
+    });
   }
 }
 
@@ -133,5 +136,115 @@ export async function convertWallsToRoomsV1(
   }
 
   return response.json();
+}
+
+/**
+ * Detect rooms directly using v2 model (room detection).
+ * Calls the room detection Lambda directly.
+ */
+export async function detectRoomsV2(
+  imageBase64: string,
+  options: {
+    confidence_threshold?: number;
+    return_visualization?: boolean;
+  } = {}
+): Promise<DetectionResponse> {
+  const { confidence_threshold = 0.5, return_visualization = true } = options;
+
+  const response = await fetch(`${API_BASE_URL}/api/v2/detect-rooms`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      image: imageBase64,
+      confidence_threshold,
+    }),
+  });
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ error: { message: 'Room detection failed' } }));
+    throw new Error(error.error?.message || 'Room detection failed');
+  }
+
+  // Parse Lambda response (may be wrapped in body if from API Gateway)
+  const data = await response.json();
+  
+  // Handle API Gateway response format (statusCode, body)
+  let v2Response: any;
+  if (data.statusCode && data.body) {
+    v2Response = typeof data.body === 'string' ? JSON.parse(data.body) : data.body;
+  } else {
+    v2Response = data;
+  }
+
+  // Transform v2 response format to frontend format
+  return transformV2Response(v2Response);
+}
+
+/**
+ * Transform v2 Lambda response to frontend DetectionResponse format
+ */
+function transformV2Response(v2Response: any): DetectionResponse {
+  if (!v2Response.success) {
+    throw new Error(v2Response.error || 'Room detection failed');
+  }
+
+  const detectedRooms = v2Response.detected_rooms || [];
+  const imageDimensions = v2Response.image_dimensions || [0, 0];
+  const [width, height] = imageDimensions;
+
+  // Transform rooms to frontend format
+  const rooms = detectedRooms.map((room: any) => {
+    // v2 provides bounding_box_pixels as [x1, y1, x2, y2]
+    const [x1, y1, x2, y2] = room.bounding_box_pixels || room.bounding_box || [0, 0, 0, 0];
+    
+    // Calculate area
+    const area_pixels = (x2 - x1) * (y2 - y1);
+    
+    // Calculate centroid
+    const centroid: [number, number] = [
+      Math.round((x1 + x2) / 2),
+      Math.round((y1 + y2) / 2)
+    ];
+    
+    // Create polygon vertices from bounding box (rectangle)
+    const polygon_vertices: [number, number][] = [
+      [x1, y1],
+      [x2, y1],
+      [x2, y2],
+      [x1, y2]
+    ];
+
+    return {
+      id: room.id || `room_${Math.random().toString(36).substr(2, 9)}`,
+      polygon_vertices,
+      bounding_box: {
+        x_min: x1,
+        y_min: y1,
+        x_max: x2,
+        y_max: y2,
+      },
+      area_pixels,
+      centroid,
+      confidence: room.confidence || 0.5,
+      shape_type: room.shape_type || 'rectangle',
+      num_vertices: 4, // Rectangle has 4 vertices
+    };
+  });
+
+  return {
+    success: true,
+    rooms,
+    total_rooms: v2Response.total_rooms_detected || rooms.length,
+    processing_time_ms: (v2Response.inference_time || 0) * 1000, // Convert seconds to milliseconds
+    model_version: 'v2',
+    visualization: undefined, // v2 doesn't provide visualization yet
+    metadata: {
+      model: v2Response.model || 'YOLOv8-Large',
+      confidence_threshold: v2Response.confidence_threshold || 0.5,
+      image_dimensions: imageDimensions,
+    },
+  };
 }
 

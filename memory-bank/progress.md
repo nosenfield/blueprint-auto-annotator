@@ -5,14 +5,14 @@
 ## Current Sprint Status
 
 **Sprint**: Setup & Phase 1 - Local Development
-**Progress**: 80% complete (setup + project structure + shared components + wall detection Lambda v1 + geometric conversion Lambda v1 + frontend application + deployment scripts + room detection Lambda + local testing)
+**Progress**: 90% complete (setup + project structure + shared components + wall detection Lambda v1 + geometric conversion Lambda v1 + frontend application + deployment scripts + frontend deployment scripts + v2 model support + room detection Lambda + local testing)
 **Target Completion**: 2025-11-11
 
 ---
 
 ## Phase Status
 
-### Phase 1: Local Development Setup (In Progress - 80%)
+### Phase 1: Local Development Setup (In Progress - 90%)
 - [x] Project structure planning
 - [x] Memory Bank initialization
 - [x] Backend directory structure creation
@@ -22,6 +22,8 @@
 - [x] Geometric Conversion Lambda v1 implemented (Task 1.4) - Wall-to-room conversion
 - [x] Frontend Application implemented (Task 1.5) - React app with v1 support
 - [x] Deployment scripts created (Task 1.6) - AWS deployment automation
+- [x] Frontend deployment scripts created (Task 1.7) - S3/CloudFront deployment
+- [x] v2 model support enabled in frontend - User can choose between v1 and v2
 - [x] Room detection Lambda implementation
 - [x] Geometric algorithm implementation
 - [x] Visualization generator implementation
@@ -54,10 +56,14 @@
 - [x] Results display component
 - [x] Main App component
 
-### Phase 5: Deployment (Not Started - 0%)
-- [ ] Frontend build for production
-- [ ] S3 bucket setup
-- [ ] CloudFront distribution
+### Phase 5: Deployment (Scripts Ready - 0%)
+- [x] Frontend build script created (Task 1.7)
+- [x] S3 bucket setup script created
+- [x] Frontend deployment script created
+- [x] CloudFront setup guidance provided
+- [ ] Frontend build for production (via scripts)
+- [ ] S3 bucket setup (via scripts)
+- [ ] CloudFront distribution (manual or Terraform)
 - [ ] Environment configuration
 
 ### Phase 6: CI/CD Setup (Not Started - 0%)
@@ -75,6 +81,34 @@
 ---
 
 ## Completed Tasks
+
+### 2025-11-09 (Task 1.7 - Deploy Frontend to S3/CloudFront)
+- ✓ Created frontend build script
+  - build-frontend.sh: Installs dependencies and builds React app for production
+  - Validates build output
+- ✓ Created S3 bucket setup script
+  - setup-s3-bucket.sh: Creates S3 bucket, enables static website hosting, applies bucket policy
+  - Configures public access settings
+- ✓ Created frontend deployment script
+  - deploy-frontend.sh: Builds and deploys frontend to S3
+  - Sets appropriate cache headers
+  - Handles file uploads and deletions
+- ✓ Created CloudFront setup guidance script
+  - setup-cloudfront.sh: Provides guidance for CloudFront configuration
+  - Documents recommended settings and error pages
+- ✓ Created S3 bucket policy configuration
+  - bucket-policy.json: Public read access policy
+- ✓ Created CloudFront configuration template
+  - cloudfront-config.example.json: Example CloudFront distribution config
+- ✓ Created frontend deployment documentation
+  - FRONTEND_DEPLOYMENT.md: Complete deployment guide with troubleshooting
+- ✓ Created production environment template
+  - .env.production.example: Production environment variables template
+- ✓ Enabled v2 model support in frontend
+  - Updated Upload component to enable v2 model selection
+  - Implemented detectRoomsV2() function
+  - Created transformV2Response() to convert v2 format to frontend format
+  - Updated detectRooms() to call v2 when version is 'v2'
 
 ### 2025-11-09 (Task 1.6 - Deploy Wall Model v1 to AWS)
 - ✓ Created deployment scripts for Lambda functions
@@ -222,6 +256,8 @@ No blocked tasks currently
 - [x] Geometric conversion Lambda v1 (Task 1.4) ✅
 - [x] Frontend Application (Task 1.5) ✅
 - [x] Deployment scripts (Task 1.6) ✅
+- [x] Frontend deployment scripts (Task 1.7) ✅
+- [x] v2 model support enabled in frontend ✅
 
 ### 2025-11-11 (Day 3)
 - [ ] Complete room detection Lambda implementation

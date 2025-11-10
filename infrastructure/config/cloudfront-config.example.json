@@ -1,0 +1,42 @@
+{
+  "comment": "CloudFront Distribution Configuration",
+  "origins": {
+    "S3-Website": {
+      "domain": "room-reader-frontend-ACCOUNT_ID.s3-website-us-east-1.amazonaws.com",
+      "id": "S3-room-reader-frontend",
+      "customOriginConfig": {
+        "httpPort": 80,
+        "httpsPort": 443,
+        "originProtocolPolicy": "http-only"
+      }
+    }
+  },
+  "defaultCacheBehavior": {
+    "targetOriginId": "S3-room-reader-frontend",
+    "viewerProtocolPolicy": "redirect-to-https",
+    "allowedMethods": ["GET", "HEAD", "OPTIONS"],
+    "cachedMethods": ["GET", "HEAD"],
+    "compress": true,
+    "defaultTTL": 86400,
+    "maxTTL": 31536000,
+    "minTTL": 0
+  },
+  "customErrorResponses": [
+    {
+      "errorCode": 404,
+      "responsePagePath": "/index.html",
+      "responseCode": 200,
+      "errorCachingMinTTL": 300
+    },
+    {
+      "errorCode": 403,
+      "responsePagePath": "/index.html",
+      "responseCode": 200,
+      "errorCachingMinTTL": 300
+    }
+  ],
+  "enabled": true,
+  "priceClass": "PriceClass_100",
+  "defaultRootObject": "index.html"
+}
+
