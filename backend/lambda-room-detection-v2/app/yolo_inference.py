@@ -10,7 +10,7 @@ import base64
 import tarfile
 import boto3
 from botocore.exceptions import ClientError, NoCredentialsError
-from typing import Dict, List, Any
+from typing import Dict, List, Any, Optional
 from PIL import Image
 import torch
 from ultralytics import YOLO
@@ -168,12 +168,14 @@ class YOLOInference:
         
         return img
     
-    def run_inference(self, image: Image.Image) -> List[Dict[str, Any]]:
+    def run_inference(self, image: Image.Image, confidence_threshold: Optional[float] = None) -> List[Dict[str, Any]]:
         """
         Run YOLO inference on image
         
         Args:
             image: PIL Image
+            confidence_threshold: Optional confidence threshold override (0.0-1.0)
+                                  If None, uses self.confidence_threshold from environment
             
         Returns:
             List of detected rooms with bounding boxes
@@ -184,10 +186,13 @@ class YOLOInference:
         # Get original image size
         original_width, original_height = image.size
         
+        # Use provided threshold or fall back to instance default
+        conf_threshold = confidence_threshold if confidence_threshold is not None else self.confidence_threshold
+        
         # Run inference
         results = self.model(
             image,
-            conf=self.confidence_threshold,
+            conf=conf_threshold,
             iou=self.iou_threshold,
             imgsz=self.image_size,
             verbose=False  # Suppress YOLO output
@@ -411,12 +416,14 @@ class YOLOInference:
             'confidence_threshold': self.confidence_threshold
         }
     
-    def predict(self, image_data: bytes) -> Dict[str, Any]:
+    def predict(self, image_data: bytes, confidence_threshold: Optional[float] = None) -> Dict[str, Any]:
         """
         Main prediction pipeline
         
         Args:
             image_data: Raw image bytes
+            confidence_threshold: Optional confidence threshold override (0.0-1.0)
+                                  If None, uses self.confidence_threshold from environment
             
         Returns:
             Detection results
@@ -428,14 +435,18 @@ class YOLOInference:
             # Preprocess image
             image = self.preprocess_image(image_data)
             
-            # Run inference
-            detections = self.run_inference(image)
+            # Run inference with optional confidence threshold override
+            detections = self.run_inference(image, confidence_threshold=confidence_threshold)
             
             # Format results
             results = self.postprocess_detections(detections)
             
             # Add image dimensions
             results['image_dimensions'] = list(image.size)
+            
+            # Include the actual confidence threshold used in results
+            actual_threshold = confidence_threshold if confidence_threshold is not None else self.confidence_threshold
+            results['confidence_threshold'] = actual_threshold
             
             return results
             

@@ -72,8 +72,11 @@ echo ""
 # Step 4: Build Docker image
 echo -e "${YELLOW}Step 4: Building Docker image...${NC}"
 echo "  This may take 5-10 minutes..."
-cd "$(dirname "$0")/../../backend/lambda-wall-detection-v1"
-docker build -t $ECR_REPO_NAME:latest .
+echo "  Building for platform: linux/amd64 (Lambda requirement)"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+BACKEND_DIR="$SCRIPT_DIR/../../backend"
+cd "$BACKEND_DIR"
+docker buildx build --platform linux/amd64 -f lambda-wall-detection-v1/Dockerfile -t $ECR_REPO_NAME:latest --load .
 echo "  ✓ Docker image built"
 echo ""
 

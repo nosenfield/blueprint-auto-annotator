@@ -55,6 +55,22 @@ def handler(event, context):
         
         image_base64 = body['image']
         
+        # Extract optional confidence threshold override
+        confidence_threshold = body.get('confidence_threshold')
+        if confidence_threshold is not None:
+            try:
+                confidence_threshold = float(confidence_threshold)
+                if not (0.0 <= confidence_threshold <= 1.0):
+                    return create_response(400, {
+                        'success': False,
+                        'error': 'confidence_threshold must be between 0.0 and 1.0'
+                    })
+            except (ValueError, TypeError):
+                return create_response(400, {
+                    'success': False,
+                    'error': 'confidence_threshold must be a valid number'
+                })
+        
         # Decode base64 image
         try:
             image_data = base64.b64decode(image_base64)
@@ -65,12 +81,17 @@ def handler(event, context):
             })
         
         print(f"Image size: {len(image_data)} bytes")
+        if confidence_threshold is not None:
+            print(f"Using confidence threshold override: {confidence_threshold}")
         
         # Get inference handler
         inference = get_inference_handler()
         
-        # Run prediction
-        results = inference.predict(image_data)
+        # Run prediction with optional confidence threshold
+        if confidence_threshold is not None:
+            results = inference.predict(image_data, confidence_threshold=confidence_threshold)
+        else:
+            results = inference.predict(image_data)
         
         # Add timing info
         inference_time = time.time() - start_time

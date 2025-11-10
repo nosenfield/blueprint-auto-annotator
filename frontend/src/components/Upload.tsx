@@ -9,6 +9,8 @@ export function Upload() {
   const [results, setResults] = useState<DetectionResponse | null>(null);
   const [error, setError] = useState<string>('');
   const [modelVersion, setModelVersion] = useState<ModelVersion>('v1');
+  // Default confidence thresholds: v1 uses 0.10, v2 uses 0.5
+  const [confidenceThreshold, setConfidenceThreshold] = useState<number>(0.10);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -56,6 +58,7 @@ export function Upload() {
       const response = await detectRooms(base64, {
         version: modelVersion,
         return_visualization: true,
+        confidence_threshold: confidenceThreshold,
       });
 
       setResults(response);
@@ -67,43 +70,104 @@ export function Upload() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
-      <h1 className="text-3xl font-bold mb-6">Room Detection</h1>
+    <div className="max-w-4xl mx-auto px-6 pb-6 pt-2">
+      {/* Two Column Layout */}
+      <div className="mb-4 grid grid-cols-2 gap-4">
+        {/* Left Column: Detection Model and Blueprint Upload */}
+        <div>
+          {/* Detection Model */}
+          <div className="mb-4">
+            <label className="block text-sm font-medium mb-2">
+              Detection Model:
+            </label>
+            <select
+              value={modelVersion}
+              onChange={(e) => {
+                const newVersion = e.target.value as ModelVersion;
+                setModelVersion(newVersion);
+                // Update confidence threshold to model-specific default when switching
+                setConfidenceThreshold(newVersion === 'v1' ? 0.10 : 0.5);
+              }}
+              className="p-2 border rounded w-full max-w-xs"
+              disabled={loading}
+            >
+              <option value="v1">Wall Model (v1) - 2-Step Pipeline</option>
+              <option value="v2">Room Model (v2) - Direct Detection</option>
+            </select>
+            <p className="text-xs text-gray-500 mt-1" style={{ visibility: 'hidden' }}>
+              &nbsp;
+            </p>
+          </div>
 
-      {/* Model Selection */}
-      <div className="mb-4">
-        <label className="block text-sm font-medium mb-2">
-          Detection Model:
-        </label>
-        <select
-          value={modelVersion}
-          onChange={(e) => setModelVersion(e.target.value as ModelVersion)}
-          className="p-2 border rounded w-full max-w-xs"
-          disabled={loading}
-        >
-          <option value="v1">Wall Model (v1) - 2-Step Pipeline</option>
-          <option value="v2">Room Model (v2) - Direct Detection</option>
-        </select>
-      </div>
+          {/* Blueprint Upload */}
+          <div>
+            <label className="block text-sm font-medium mb-2">
+              Blueprint Image:
+            </label>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleFileSelect}
+              disabled={loading}
+              className="block w-full text-sm text-gray-500
+                file:mr-4 file:py-2 file:px-4
+                file:rounded-full file:border-0
+                file:text-sm file:font-semibold
+                file:bg-blue-50 file:text-blue-700
+                hover:file:bg-blue-100
+                disabled:opacity-50 disabled:cursor-not-allowed"
+            />
+          </div>
+        </div>
 
-      {/* File Upload */}
-      <div className="mb-4">
-        <label className="block text-sm font-medium mb-2">
-          Upload Blueprint Image:
-        </label>
-        <input
-          type="file"
-          accept="image/*"
-          onChange={handleFileSelect}
-          disabled={loading}
-          className="block w-full text-sm text-gray-500
-            file:mr-4 file:py-2 file:px-4
-            file:rounded-full file:border-0
-            file:text-sm file:font-semibold
-            file:bg-blue-50 file:text-blue-700
-            hover:file:bg-blue-100
-            disabled:opacity-50 disabled:cursor-not-allowed"
-        />
+        {/* Right Column: Confidence Threshold and Detect Button */}
+        <div>
+          {/* Confidence Threshold */}
+          <div className="mb-4">
+            <label className="block text-sm font-medium mb-2">
+              Confidence Threshold: {confidenceThreshold.toFixed(2)}
+            </label>
+            <input
+              type="range"
+              min="0"
+              max="1"
+              step="0.05"
+              value={confidenceThreshold}
+              onChange={(e) => setConfidenceThreshold(parseFloat(e.target.value))}
+              disabled={loading}
+              className="w-full max-w-xs h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer
+                disabled:opacity-50 disabled:cursor-not-allowed
+                [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4
+                [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-blue-600
+                [&::-webkit-slider-thumb]:cursor-pointer
+                [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:h-4
+                [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-blue-600
+                [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:cursor-pointer"
+            />
+            <p className="text-xs text-gray-500 mt-1">
+              {modelVersion === 'v1' 
+                ? 'Lower values detect more walls (may include false positives). Higher values are more conservative. Default: 0.10'
+                : 'Lower values detect more rooms (may include false positives). Higher values are more conservative. Default: 0.50'
+              }
+            </p>
+          </div>
+
+          {/* Detect Button */}
+          <div>
+            <label className="block text-sm font-medium mb-2">
+              &nbsp;
+            </label>
+            <button
+              onClick={handleUpload}
+              disabled={!selectedFile || loading}
+              className="px-6 py-2 bg-blue-600 text-white rounded
+                hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed
+                transition-colors duration-200"
+            >
+              {loading ? 'Detecting...' : 'Detect Rooms'}
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* Image Preview */}
@@ -117,17 +181,6 @@ export function Upload() {
           />
         </div>
       )}
-
-      {/* Upload Button */}
-      <button
-        onClick={handleUpload}
-        disabled={!selectedFile || loading}
-        className="px-6 py-2 bg-blue-600 text-white rounded
-          hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed
-          transition-colors duration-200"
-      >
-        {loading ? 'Detecting...' : 'Detect Rooms'}
-      </button>
 
       {/* Error Display */}
       {error && (
