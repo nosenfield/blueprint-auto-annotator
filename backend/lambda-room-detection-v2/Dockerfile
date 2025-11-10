@@ -1,0 +1,23 @@
+# Use AWS Lambda Python base image
+FROM public.ecr.aws/lambda/python:3.11
+
+# Install system dependencies and build tools
+RUN yum install -y \
+    mesa-libGL \
+    gcc \
+    gcc-c++ \
+    make \
+    && yum clean all
+
+# Copy requirements
+COPY requirements.txt ${LAMBDA_TASK_ROOT}/
+
+# Install Python dependencies
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy Lambda function code
+COPY app/ ${LAMBDA_TASK_ROOT}/app/
+
+# Set handler
+CMD ["app.lambda_handler.handler"]
+
