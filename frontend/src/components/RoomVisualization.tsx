@@ -51,11 +51,16 @@ export const RoomVisualization = forwardRef<RoomVisualizationRef, RoomVisualizat
 
         // Determine color and style based on hover state
         const isHovered = hoveredRoom === id;
-        const color = isHovered ? 'rgba(255, 165, 0, 0.8)' : 'rgba(255, 140, 0, 0.6)';
+        const strokeColor = isHovered ? 'rgba(255, 165, 0, 0.9)' : 'rgba(255, 140, 0, 0.7)';
+        const fillColor = isHovered ? 'rgba(255, 140, 0, 0.15)' : 'rgba(255, 140, 0, 0.1)';
         const lineWidth = isHovered ? 4 : 3;
 
-        // Draw bounding box
-        ctx.strokeStyle = color;
+        // Fill bounding box
+        ctx.fillStyle = fillColor;
+        ctx.fillRect(x_min, y_min, width, height);
+
+        // Draw bounding box outline
+        ctx.strokeStyle = strokeColor;
         ctx.lineWidth = lineWidth;
         ctx.strokeRect(x_min, y_min, width, height);
 

@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react';
 import type { DetectionResponse, ModelVersion } from '../types';
 import { detectRooms } from '../services/api';
 import { RoomVisualization, type RoomVisualizationRef } from './RoomVisualization';
+import { V1RoomVisualization, type V1RoomVisualizationRef } from './V1RoomVisualization';
 
 export function Upload() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -11,7 +12,8 @@ export function Upload() {
   const [modelVersion, setModelVersion] = useState<ModelVersion>('v1');
   // Default confidence thresholds: v1 uses 0.10, v2 uses 0.5
   const [confidenceThreshold, setConfidenceThreshold] = useState<number>(0.10);
-  const visualizationRef = useRef<RoomVisualizationRef>(null);
+  const v1VisualizationRef = useRef<V1RoomVisualizationRef>(null);
+  const v2VisualizationRef = useRef<RoomVisualizationRef>(null);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -85,19 +87,32 @@ export function Upload() {
     if (!results) return;
 
     // Save the image first
-    if (results.model_version === 'v1' && results.visualization) {
-      // For v1, use the base64 visualization from the server
-      const link = document.createElement('a');
-      link.href = `data:image/png;base64,${results.visualization}`;
-      link.download = `room-detection-visualization-${Date.now()}.png`;
-      link.click();
-      // Save JSON after a short delay to ensure image download starts
-      setTimeout(handleSaveJSON, 100);
-    } else if (results.model_version === 'v2' && visualizationRef.current) {
-      // For v2, export the canvas as image
-      const canvas = visualizationRef.current.getCanvas();
+    if (results.model_version === 'v1' && v1VisualizationRef.current) {
+      // For v1, export the canvas as image
+      const canvas = v1VisualizationRef.current.getCanvas();
       if (canvas) {
-        canvas.toBlob((blob) => {
+        canvas.toBlob((blob: Blob | null) => {
+          if (blob) {
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `room-detection-visualization-${Date.now()}.png`;
+            link.click();
+            URL.revokeObjectURL(url);
+
+            // Save JSON after a short delay to ensure image download starts
+            setTimeout(handleSaveJSON, 100);
+          }
+        });
+      } else {
+        // If canvas is not available, still save JSON
+        handleSaveJSON();
+      }
+    } else if (results.model_version === 'v2' && v2VisualizationRef.current) {
+      // For v2, export the canvas as image
+      const canvas = v2VisualizationRef.current.getCanvas();
+      if (canvas) {
+        canvas.toBlob((blob: Blob | null) => {
           if (blob) {
             const url = URL.createObjectURL(blob);
             const link = document.createElement('a');
@@ -277,16 +292,15 @@ export function Upload() {
 
               {/* Output Image */}
               <div>
-                {results.model_version === 'v1' && results.visualization ? (
-                  <img
-                    src={`data:image/png;base64,${results.visualization}`}
-                    alt="Detection results"
-                    className="w-full h-auto border rounded shadow-sm"
-                    style={{ maxWidth: '768px', maxHeight: '512px', objectFit: 'contain' }}
+                {results.model_version === 'v1' && results.rooms.length > 0 ? (
+                  <V1RoomVisualization
+                    ref={v1VisualizationRef}
+                    imageUrl={imagePreview}
+                    rooms={results.rooms}
                   />
                 ) : results.model_version === 'v2' && results.rooms.length > 0 ? (
                   <RoomVisualization
-                    ref={visualizationRef}
+                    ref={v2VisualizationRef}
                     imageUrl={imagePreview}
                     rooms={results.rooms}
                   />
