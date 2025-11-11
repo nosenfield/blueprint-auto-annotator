@@ -69,15 +69,30 @@ export function Upload() {
     }
   };
 
-  const handleSaveImage = () => {
+  const handleSaveJSON = () => {
+    if (!results) return;
+    const dataStr = JSON.stringify(results, null, 2);
+    const dataBlob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(dataBlob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `room-detection-results-${Date.now()}.json`;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleSaveBoth = () => {
     if (!results) return;
 
+    // Save the image first
     if (results.model_version === 'v1' && results.visualization) {
       // For v1, use the base64 visualization from the server
       const link = document.createElement('a');
       link.href = `data:image/png;base64,${results.visualization}`;
       link.download = `room-detection-visualization-${Date.now()}.png`;
       link.click();
+      // Save JSON after a short delay to ensure image download starts
+      setTimeout(handleSaveJSON, 100);
     } else if (results.model_version === 'v2' && visualizationRef.current) {
       // For v2, export the canvas as image
       const canvas = visualizationRef.current.getCanvas();
@@ -90,9 +105,18 @@ export function Upload() {
             link.download = `room-detection-visualization-${Date.now()}.png`;
             link.click();
             URL.revokeObjectURL(url);
+
+            // Save JSON after a short delay to ensure image download starts
+            setTimeout(handleSaveJSON, 100);
           }
         });
+      } else {
+        // If canvas is not available, still save JSON
+        handleSaveJSON();
       }
+    } else {
+      // If no image can be saved, still save JSON
+      handleSaveJSON();
     }
   };
 
@@ -195,31 +219,13 @@ export function Upload() {
                 {loading ? 'Detecting...' : 'Detect Rooms'}
               </button>
               {results && (
-                <>
-                  <button
-                    onClick={handleSaveImage}
-                    className="px-6 py-2 bg-blue-600 text-white rounded
-                      hover:bg-blue-700 transition-colors duration-200"
-                  >
-                    Save Image
-                  </button>
-                  <button
-                    onClick={() => {
-                      const dataStr = JSON.stringify(results, null, 2);
-                      const dataBlob = new Blob([dataStr], { type: 'application/json' });
-                      const url = URL.createObjectURL(dataBlob);
-                      const link = document.createElement('a');
-                      link.href = url;
-                      link.download = `room-detection-results-${Date.now()}.json`;
-                      link.click();
-                      URL.revokeObjectURL(url);
-                    }}
-                    className="px-6 py-2 bg-blue-600 text-white rounded
-                      hover:bg-blue-700 transition-colors duration-200"
-                  >
-                    Save JSON
-                  </button>
-                </>
+                <button
+                  onClick={handleSaveBoth}
+                  className="px-6 py-2 bg-blue-600 text-white rounded
+                    hover:bg-blue-700 transition-colors duration-200"
+                >
+                  Save Image + JSON
+                </button>
               )}
             </div>
           </div>
@@ -289,29 +295,12 @@ export function Upload() {
                     <p className="text-gray-500">No detections to display</p>
                   </div>
                 )}
-
-                {/* Save JSON Button */}
-                <button
-                  onClick={() => {
-                    const dataStr = JSON.stringify(results, null, 2);
-                    const dataBlob = new Blob([dataStr], { type: 'application/json' });
-                    const url = URL.createObjectURL(dataBlob);
-                    const link = document.createElement('a');
-                    link.href = url;
-                    link.download = `room-detection-results-${Date.now()}.json`;
-                    link.click();
-                    URL.revokeObjectURL(url);
-                  }}
-                  className="mt-3 w-full px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 transition-colors duration-200 text-sm font-medium"
-                >
-                  Save JSON
-                </button>
               </div>
             </div>
           </div>
 
           {/* Results header with stats inline */}
-          <div className="flex items-center gap-6 mb-4">
+          <div className="flex items-center gap-6 mb-4" style={{ margin: '50px' }}>
             <h2 className="text-2xl font-bold">Results</h2>
             <div className="flex gap-6">
               <div>
@@ -327,7 +316,7 @@ export function Upload() {
 
           {/* Room Details */}
           {results.rooms.length > 0 && (
-            <div>
+            <div style={{ marginLeft: '50px' }}>
               <h3 className="text-lg font-semibold mb-2">Detected Rooms</h3>
               <div className="space-y-2">
                 {results.rooms.map((room) => (
