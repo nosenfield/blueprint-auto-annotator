@@ -10,13 +10,16 @@ RUN yum install -y \
     && yum clean all
 
 # Copy requirements
-COPY requirements.txt ${LAMBDA_TASK_ROOT}/
+COPY lambda-room-detection-v2/requirements.txt ${LAMBDA_TASK_ROOT}/
 
 # Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Copy shared utilities
+COPY shared ${LAMBDA_TASK_ROOT}/shared/
+
 # Copy Lambda function code
-COPY app/ ${LAMBDA_TASK_ROOT}/app/
+COPY lambda-room-detection-v2/app/ ${LAMBDA_TASK_ROOT}/app/
 
 # Set proper permissions on Lambda handler files
 RUN chmod -R 755 ${LAMBDA_TASK_ROOT}/app/

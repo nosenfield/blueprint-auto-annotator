@@ -157,29 +157,52 @@ def draw_rooms_on_image(
             (0, 255, 255),  # Yellow
         ]
     
+    # First pass: draw all filled polygons with proper alpha blending
     for i, room in enumerate(rooms):
         color = colors[i % len(colors)]
-
-        # Draw polygon outline
         points = np.array(room.polygon_vertices, dtype=np.int32)
-        cv2.polylines(overlay, [points], True, color, 3)
 
-        # Draw filled polygon with transparency
-        temp_mask = np.zeros_like(image)
-        cv2.fillPoly(temp_mask, [points], color)
-        # Only blend in the polygon region to avoid darkening the whole image
-        overlay = cv2.addWeighted(overlay, 0.85, temp_mask, 0.15, 0)
-        
-        # Draw room ID at centroid
+        # Create a temporary layer for this room's fill
+        temp_layer = image.copy()
+        cv2.fillPoly(temp_layer, [points], color)
+
+        # Blend only 10% of the colored fill to keep background bright
+        cv2.addWeighted(temp_layer, 0.1, overlay, 0.9, 0, overlay)
+
+    # Second pass: draw polygon outlines (no transparency)
+    for i, room in enumerate(rooms):
+        color = colors[i % len(colors)]
+        points = np.array(room.polygon_vertices, dtype=np.int32)
+        cv2.polylines(overlay, [points], True, color, 4)
+
+    # Third pass: draw room labels with background
+    for i, room in enumerate(rooms):
+        color = colors[i % len(colors)]
         cx, cy = room.centroid
+
+        # Draw black background rectangle for text
+        text = room.id
+        font = cv2.FONT_HERSHEY_SIMPLEX
+        font_scale = 0.7
+        thickness = 2
+        (text_width, text_height), baseline = cv2.getTextSize(text, font, font_scale, thickness)
+
+        # Draw semi-transparent background
+        x1 = cx - text_width // 2 - 5
+        y1 = cy - text_height // 2 - 5
+        x2 = cx + text_width // 2 + 5
+        y2 = cy + text_height // 2 + 5
+        cv2.rectangle(overlay, (x1, y1), (x2, y2), (0, 0, 0), -1)
+
+        # Draw text
         cv2.putText(
             overlay,
-            room.id,
-            (cx - 20, cy),
-            cv2.FONT_HERSHEY_SIMPLEX,
-            0.6,
+            text,
+            (cx - text_width // 2, cy + text_height // 2),
+            font,
+            font_scale,
             (255, 255, 255),
-            2
+            thickness
         )
     
     return overlay

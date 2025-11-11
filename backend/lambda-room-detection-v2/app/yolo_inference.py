@@ -112,6 +112,7 @@ class YOLOInference:
             # Based on your model structure: try final_model.pt first, then best.pt
             possible_paths = [
                 '/tmp/model/final_model.pt',
+                '/tmp/model/room_detect/weights/best.pt',
                 '/tmp/model/room_detection/weights/best.pt',
                 '/tmp/model/best.pt',
             ]
