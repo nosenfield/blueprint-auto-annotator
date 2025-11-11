@@ -168,9 +168,28 @@ def handler(event, context):
     """
     Lambda handler - delegates to Mangum for FastAPI integration.
     FastAPI CORSMiddleware handles CORS headers automatically.
+    Handles warmup events from EventBridge.
     """
     import json
     import traceback
+
+    # Handle warmup events from EventBridge
+    if isinstance(event, dict) and event.get('warmup'):
+        print("Warmup event received - keeping Lambda warm")
+        # Ensure detector is initialized
+        global detector
+        if detector is None:
+            print("Initializing detector on warmup...")
+            detector = WallDetector()
+            print("Detector initialized")
+        else:
+            print("Detector already initialized (warm)")
+
+        return create_response(200, {
+            'success': True,
+            'message': 'Lambda warmed up',
+            'model_loaded': detector is not None
+        })
 
     try:
         # Call Mangum handler (it handles async internally)

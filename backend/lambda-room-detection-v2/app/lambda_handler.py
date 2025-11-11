@@ -36,8 +36,20 @@ def handler(event, context):
     
     print("Lambda invocation started")
     start_time = time.time()
-    
+
     try:
+        # Handle warmup events from EventBridge
+        if isinstance(event, dict) and event.get('warmup'):
+            print("Warmup event received - keeping Lambda warm")
+            # Initialize inference handler to ensure model is loaded
+            inference = get_inference_handler()
+            print("Model loaded and ready")
+            return create_response(200, {
+                'success': True,
+                'message': 'Lambda warmed up',
+                'model_loaded': True
+            })
+
         # Parse input
         if 'body' in event:
             # API Gateway format
@@ -45,7 +57,7 @@ def handler(event, context):
         else:
             # Direct invocation
             body = event
-        
+
         # Extract image data
         if 'image' not in body:
             return create_response(400, {
