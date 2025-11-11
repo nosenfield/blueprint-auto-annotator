@@ -14,12 +14,6 @@ function App() {
       <main className="py-8">
         <Upload />
       </main>
-      
-      <footer className="bg-white border-t mt-12">
-        <div className="max-w-4xl mx-auto px-6 py-4 text-center text-sm text-gray-600">
-          <p>Room Reader v1.0 - Powered by YOLO-based wall detection and geometric algorithms</p>
-        </div>
-      </footer>
     </div>
   );
 }

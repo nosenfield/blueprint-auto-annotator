@@ -73,10 +73,9 @@ export async function detectRooms(
       },
     };
   } else {
-    // V2: Direct room detection
+    // V2: Direct room detection (client-side visualization, no server rendering)
     return await detectRoomsV2(imageBase64, {
       confidence_threshold,
-      return_visualization,
     });
   }
 }
@@ -157,7 +156,6 @@ export async function detectRoomsV2(
   imageBase64: string,
   options: {
     confidence_threshold?: number;
-    return_visualization?: boolean;
   } = {}
 ): Promise<DetectionResponse> {
   const { confidence_threshold = 0.5 } = options;
@@ -227,7 +225,7 @@ function transformV2Response(v2Response: any): DetectionResponse {
     ];
 
     return {
-      id: room.id || `room_${Math.random().toString(36).substr(2, 9)}`,
+      id: room.id || `room_${Math.random().toString(36).substring(2, 11)}`,
       polygon_vertices,
       bounding_box: {
         x_min: x1,

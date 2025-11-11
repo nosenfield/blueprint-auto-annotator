@@ -1,16 +1,17 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import type { DetectionResponse, ModelVersion } from '../types';
 import { detectRooms } from '../services/api';
+import { RoomVisualization, type RoomVisualizationRef } from './RoomVisualization';
 
 export function Upload() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>('');
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState<DetectionResponse | null>(null);
-  const [error, setError] = useState<string>('');
   const [modelVersion, setModelVersion] = useState<ModelVersion>('v1');
   // Default confidence thresholds: v1 uses 0.10, v2 uses 0.5
   const [confidenceThreshold, setConfidenceThreshold] = useState<number>(0.10);
+  const visualizationRef = useRef<RoomVisualizationRef>(null);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -18,18 +19,17 @@ export function Upload() {
 
     // Validate file type
     if (!file.type.startsWith('image/')) {
-      setError('Please select an image file');
+      alert('Please select an image file');
       return;
     }
 
     // Validate file size (max 10MB)
     if (file.size > 10 * 1024 * 1024) {
-      setError('Image size must be less than 10MB');
+      alert('Image size must be less than 10MB');
       return;
     }
 
     setSelectedFile(file);
-    setError('');
     setResults(null);
 
     // Create preview
@@ -42,12 +42,11 @@ export function Upload() {
 
   const handleUpload = async () => {
     if (!selectedFile || !imagePreview) {
-      setError('Please select an image');
+      alert('Please select an image');
       return;
     }
 
     setLoading(true);
-    setError('');
     setResults(null);
 
     try {
@@ -63,20 +62,48 @@ export function Upload() {
 
       setResults(response);
     } catch (err: any) {
-      setError(err.message || 'Detection failed');
+      const errorMessage = err.message || 'Unknown error';
+      alert(`Image detection failed.\nError: ${errorMessage}`);
     } finally {
       setLoading(false);
     }
   };
 
+  const handleSaveImage = () => {
+    if (!results) return;
+
+    if (results.model_version === 'v1' && results.visualization) {
+      // For v1, use the base64 visualization from the server
+      const link = document.createElement('a');
+      link.href = `data:image/png;base64,${results.visualization}`;
+      link.download = `room-detection-visualization-${Date.now()}.png`;
+      link.click();
+    } else if (results.model_version === 'v2' && visualizationRef.current) {
+      // For v2, export the canvas as image
+      const canvas = visualizationRef.current.getCanvas();
+      if (canvas) {
+        canvas.toBlob((blob) => {
+          if (blob) {
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `room-detection-visualization-${Date.now()}.png`;
+            link.click();
+            URL.revokeObjectURL(url);
+          }
+        });
+      }
+    }
+  };
+
   return (
-    <div className="max-w-4xl mx-auto px-6 pb-6 pt-2">
+    <div className="max-w-full mx-auto px-6 pb-6 pt-2">
       {/* Two Column Layout */}
       <div className="mb-4 grid grid-cols-2 gap-4">
         {/* Left Column: Detection Model and Blueprint Upload */}
-        <div>
+        <div className="flex flex-col items-end">
           {/* Detection Model */}
-          <div className="mb-4">
+          <div className="mb-4 w-full max-w-md">
             <label className="block text-sm font-medium mb-2">
               Detection Model:
             </label>
@@ -88,7 +115,7 @@ export function Upload() {
                 // Update confidence threshold to model-specific default when switching
                 setConfidenceThreshold(newVersion === 'v1' ? 0.10 : 0.5);
               }}
-              className="p-2 border rounded w-full max-w-xs"
+              className="p-2 border rounded w-full"
               disabled={loading}
             >
               <option value="v1">Wall Model (v1) - 2-Step Pipeline</option>
@@ -100,7 +127,7 @@ export function Upload() {
           </div>
 
           {/* Blueprint Upload */}
-          <div>
+          <div className="w-full max-w-md">
             <label className="block text-sm font-medium mb-2">
               Blueprint Image:
             </label>
@@ -145,78 +172,158 @@ export function Upload() {
                 [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:cursor-pointer"
             />
             <p className="text-xs text-gray-500 mt-1">
-              {modelVersion === 'v1' 
-                ? 'Lower values detect more walls (may include false positives). Higher values are more conservative. Default: 0.10'
-                : 'Lower values detect more rooms (may include false positives). Higher values are more conservative. Default: 0.50'
+              {modelVersion === 'v1'
+                ? <>Lower values detect more walls (may include false positives).<br />Higher values are more conservative. Default: 0.10</>
+                : <>Lower values detect more rooms (may include false positives).<br />Higher values are more conservative. Default: 0.50</>
               }
             </p>
           </div>
 
-          {/* Detect Button */}
+          {/* Detect Button and Save JSON */}
           <div>
             <label className="block text-sm font-medium mb-2">
               &nbsp;
             </label>
-            <button
-              onClick={handleUpload}
-              disabled={!selectedFile || loading}
-              className="px-6 py-2 bg-blue-600 text-white rounded
-                hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed
-                transition-colors duration-200"
-            >
-              {loading ? 'Detecting...' : 'Detect Rooms'}
-            </button>
+            <div className="flex gap-3">
+              <button
+                onClick={handleUpload}
+                disabled={!selectedFile || loading}
+                className="px-6 py-2 bg-blue-600 text-white rounded
+                  hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed
+                  transition-colors duration-200"
+              >
+                {loading ? 'Detecting...' : 'Detect Rooms'}
+              </button>
+              {results && (
+                <>
+                  <button
+                    onClick={handleSaveImage}
+                    className="px-6 py-2 bg-blue-600 text-white rounded
+                      hover:bg-blue-700 transition-colors duration-200"
+                  >
+                    Save Image
+                  </button>
+                  <button
+                    onClick={() => {
+                      const dataStr = JSON.stringify(results, null, 2);
+                      const dataBlob = new Blob([dataStr], { type: 'application/json' });
+                      const url = URL.createObjectURL(dataBlob);
+                      const link = document.createElement('a');
+                      link.href = url;
+                      link.download = `room-detection-results-${Date.now()}.json`;
+                      link.click();
+                      URL.revokeObjectURL(url);
+                    }}
+                    className="px-6 py-2 bg-blue-600 text-white rounded
+                      hover:bg-blue-700 transition-colors duration-200"
+                  >
+                    Save JSON
+                  </button>
+                </>
+              )}
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Image Preview */}
-      {imagePreview && (
-        <div className="mb-4">
-          <label className="block text-sm font-medium mb-2">Preview:</label>
-          <img
-            src={imagePreview}
-            alt="Blueprint preview"
-            className="max-w-full h-auto border rounded shadow-sm"
-          />
-        </div>
-      )}
-
-      {/* Error Display */}
-      {error && (
-        <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded">
-          <p className="text-red-700">{error}</p>
+      {/* Image Placeholders - Show before results */}
+      {!results && (
+        <div className="mb-4" style={{ maxWidth: '95%', maxHeight: '50vh', margin: 'auto' }}>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              {imagePreview ? (
+                <img
+                  src={imagePreview}
+                  alt="Your blueprint"
+                  className="w-full h-auto border-2 border-dashed border-gray-300 rounded"
+                  style={{ maxWidth: '768px', maxHeight: '512px', objectFit: 'contain' }}
+                />
+              ) : (
+                <div className="w-full h-96 bg-gray-100 border-2 border-dashed border-gray-300 rounded flex items-center justify-center">
+                  <p className="text-gray-400">Your blueprint</p>
+                </div>
+              )}
+            </div>
+            <div>
+              <div className="w-full h-96 bg-gray-100 border-2 border-dashed border-gray-300 rounded flex items-center justify-center">
+                <p className="text-gray-400">Awaiting detection...</p>
+              </div>
+            </div>
+          </div>
         </div>
       )}
 
       {/* Results Display */}
       {results && (
         <div className="mt-6">
-          <h2 className="text-2xl font-bold mb-4">Results</h2>
-          
-          <div className="grid grid-cols-2 gap-4 mb-4">
-            <div className="p-4 bg-gray-50 rounded">
-              <p className="text-sm text-gray-600">Rooms Detected</p>
-              <p className="text-3xl font-bold">{results.total_rooms}</p>
-            </div>
-            
-            <div className="p-4 bg-gray-50 rounded">
-              <p className="text-sm text-gray-600">Processing Time</p>
-              <p className="text-3xl font-bold">{results.processing_time_ms.toFixed(0)}ms</p>
+          {/* Side-by-Side Image Comparison */}
+          <div className="mb-4" style={{ maxWidth: '95%', maxHeight: '50vh', margin: 'auto' }}>
+            <div className="grid grid-cols-2 gap-4">
+              {/* Input Image */}
+              <div>
+                <img
+                  src={imagePreview}
+                  alt="Original blueprint"
+                  className="w-full h-auto border rounded shadow-sm"
+                  style={{ maxWidth: '768px', maxHeight: '512px', objectFit: 'contain' }}
+                />
+              </div>
+
+              {/* Output Image */}
+              <div>
+                {results.model_version === 'v1' && results.visualization ? (
+                  <img
+                    src={`data:image/png;base64,${results.visualization}`}
+                    alt="Detection results"
+                    className="w-full h-auto border rounded shadow-sm"
+                    style={{ maxWidth: '768px', maxHeight: '512px', objectFit: 'contain' }}
+                  />
+                ) : results.model_version === 'v2' && results.rooms.length > 0 ? (
+                  <RoomVisualization
+                    ref={visualizationRef}
+                    imageUrl={imagePreview}
+                    rooms={results.rooms}
+                  />
+                ) : (
+                  <div className="w-full h-64 flex items-center justify-center bg-gray-100 border rounded">
+                    <p className="text-gray-500">No detections to display</p>
+                  </div>
+                )}
+
+                {/* Save JSON Button */}
+                <button
+                  onClick={() => {
+                    const dataStr = JSON.stringify(results, null, 2);
+                    const dataBlob = new Blob([dataStr], { type: 'application/json' });
+                    const url = URL.createObjectURL(dataBlob);
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = `room-detection-results-${Date.now()}.json`;
+                    link.click();
+                    URL.revokeObjectURL(url);
+                  }}
+                  className="mt-3 w-full px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 transition-colors duration-200 text-sm font-medium"
+                >
+                  Save JSON
+                </button>
+              </div>
             </div>
           </div>
 
-          {/* Visualization */}
-          {results.visualization && (
-            <div className="mb-4">
-              <h3 className="text-lg font-semibold mb-2">Visualization</h3>
-              <img
-                src={`data:image/png;base64,${results.visualization}`}
-                alt="Detection results"
-                className="max-w-full h-auto border rounded shadow-sm"
-              />
+          {/* Results header with stats inline */}
+          <div className="flex items-center gap-6 mb-4">
+            <h2 className="text-2xl font-bold">Results</h2>
+            <div className="flex gap-6">
+              <div>
+                <p className="text-sm text-gray-600">Rooms Detected</p>
+                <p className="text-2xl font-bold text-right">{results.total_rooms}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-600">Processing Time</p>
+                <p className="text-2xl font-bold text-right">{results.processing_time_ms.toFixed(0)}ms</p>
+              </div>
             </div>
-          )}
+          </div>
 
           {/* Room Details */}
           {results.rooms.length > 0 && (
